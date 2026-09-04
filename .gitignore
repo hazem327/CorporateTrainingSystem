@@ -1,0 +1,15 @@
+bin/
+obj/
+*.user
+*.suo
+.vs/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+.idea/
+.vscode/
+*.nupkg
+packages/
+.DS_Store
+Thumbs.db

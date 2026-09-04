@@ -1,0 +1,42 @@
+@model CorporateTrainingSystem.Application.Features.Courses.CreateCourse.CreateCourseCommand
+@{
+    ViewData["Title"] = "Create Course";
+}
+
+<h2>Create Course</h2>
+
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label"></label>
+        <input asp-for="Title" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Category" class="form-label"></label>
+        <input asp-for="Category" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="DurationHours" class="form-label"></label>
+        <input asp-for="DurationHours" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="PassingScore" class="form-label">Passing Score (0-100)</label>
+        <input asp-for="PassingScore" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CertificateValidityMonths" class="form-label"></label>
+        <input asp-for="CertificateValidityMonths" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create</button>
+</form>

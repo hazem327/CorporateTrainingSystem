@@ -1,0 +1,42 @@
+@model List<CorporateTrainingSystem.Application.Features.Employees.ListEmployees.EmployeeListItem>
+@{
+    ViewData["Title"] = "Employees";
+}
+
+<h2>Employees</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
+{
+    <a asp-action="Create" class="btn btn-primary mb-3">Add Employee</a>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Emp #</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Job Title</th>
+            <th>Department</th>
+            <th>Active</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var emp in Model)
+        {
+            <tr>
+                <td>@emp.EmployeeNumber</td>
+                <td>@emp.FullName</td>
+                <td>@emp.Email</td>
+                <td>@emp.JobTitle</td>
+                <td>@emp.DepartmentName</td>
+                <td>@(emp.IsActive ? "Yes" : "No")</td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/CorporateTrainingSystem.web/">
+    <Project Path="CorporateTrainingSystem.web/CorporateTrainingSystem.Web.csproj" />
+  </Folder>
+  <Project Path="CorporateTrainingSystem.Application/CorporateTrainingSystem.Application.csproj" />
+  <Project Path="CorporateTrainingSystem.Domain/CorporateTrainingSystem.Domain.csproj" />
+  <Project Path="CorporateTrainingSystem.Infrastructure/CorporateTrainingSystem.Infrastructure.csproj" />
+  <Project Path="CorporateTrainingSystem.Tests/CorporateTrainingSystem.Tests.csproj" />
+</Solution>

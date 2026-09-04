@@ -1,0 +1,46 @@
+@model CorporateTrainingSystem.Application.Features.Enrollments.EnrollEmployee.EnrollEmployeeCommand
+@{
+    ViewData["Title"] = "Enroll in Session";
+    bool isSelfEnrollment = ViewBag.IsSelfEnrollment == true;
+}
+
+<h2>@(isSelfEnrollment ? "Enroll in Training Session" : "Enroll Employee")</h2>
+
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    @if (isSelfEnrollment)
+    {
+        <input type="hidden" asp-for="EmployeeId" />
+        <div class="mb-3">
+            <label class="form-label">Employee</label>
+            <input type="text" class="form-control" value="@ViewBag.CurrentEmployeeName" readonly disabled />
+        </div>
+    }
+    else
+    {
+        <div class="mb-3">
+            <label asp-for="EmployeeId" class="form-label">Employee</label>
+            <select asp-for="EmployeeId" asp-items="ViewBag.Employees" class="form-select">
+                <option value="">-- Select Employee --</option>
+            </select>
+            <span asp-validation-for="EmployeeId" class="text-danger"></span>
+        </div>
+    }
+
+    <div class="mb-3">
+        <label asp-for="TrainingSessionId" class="form-label">Available Training Session</label>
+        <select asp-for="TrainingSessionId" asp-items="ViewBag.Sessions" class="form-select">
+            <option value="">-- Select Available Training Session --</option>
+        </select>
+        <span asp-validation-for="TrainingSessionId" class="text-danger"></span>
+        <div class="form-text">
+            Only scheduled sessions with remaining capacity are listed.
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <button type="submit" class="btn btn-primary">Enroll Now</button>
+        <a asp-action="Index" class="btn btn-secondary ms-2">Back to List</a>
+    </div>
+</form>

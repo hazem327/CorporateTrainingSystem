@@ -1,0 +1,38 @@
+@model List<CorporateTrainingSystem.Application.Features.Courses.ListCourses.CourseListItem>
+@{
+    ViewData["Title"] = "Courses";
+}
+
+<h2>Courses</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
+{
+    <a asp-action="Create" class="btn btn-primary mb-3">Create Course</a>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Duration (hrs)</th>
+            <th>Active</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var course in Model)
+        {
+            <tr>
+                <td>@course.Title</td>
+                <td>@course.Category</td>
+                <td>@course.DurationHours</td>
+                <td>@(course.IsActive ? "Yes" : "No")</td>
+            </tr>
+        }
+    </tbody>
+</table>

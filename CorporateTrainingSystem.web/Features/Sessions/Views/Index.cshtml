@@ -1,0 +1,71 @@
+@model List<CorporateTrainingSystem.Application.Features.Sessions.ListSessions.SessionListItem>
+@{
+    ViewData["Title"] = "Training Sessions";
+}
+
+<h2>Training Sessions</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
+{
+    <a asp-action="Create" class="btn btn-primary mb-3">Schedule Session</a>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Course</th>
+            <th>Instructor</th>
+            <th>Start</th>
+            <th>End</th>
+            <th>Enrolled / Capacity</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var s in Model)
+        {
+            <tr>
+                <td>@s.CourseTitle</td>
+                <td>@s.InstructorName</td>
+                <td>@s.StartDate.ToShortDateString()</td>
+                <td>@s.EndDate.ToShortDateString()</td>
+                <td>@s.EnrolledCount / @s.Capacity</td>
+                <td>@s.Location</td>
+                <td>
+                    @if (s.Status == "Scheduled")
+                    {
+                        <span class="badge bg-success">Scheduled</span>
+                    }
+                    else if (s.Status == "Cancelled")
+                    {
+                        <span class="badge bg-danger">Cancelled</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">@s.Status</span>
+                    }
+                </td>
+                <td>
+                    <div class="d-flex gap-1">
+                        @if (s.Status == "Scheduled" && s.EnrolledCount < s.Capacity)
+                        {
+                            <a asp-controller="Enrollments" asp-action="Create" asp-route-sessionId="@s.Id" class="btn btn-primary btn-sm">Enroll</a>
+                        }
+                        else if (s.Status == "Scheduled" && s.EnrolledCount >= s.Capacity)
+                        {
+                            <span class="badge bg-warning text-dark align-self-center">Full</span>
+                        }
+                        <a asp-controller="Enrollments" asp-action="Index" asp-route-sessionId="@s.Id" class="btn btn-outline-secondary btn-sm">Enrollments</a>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,148 @@
+@model List<CorporateTrainingSystem.Application.Features.Enrollments.GetTrainingHistory.EmployeeTrainingHistoryItem>
+@{
+    ViewData["Title"] = "Training History";
+    var employee = ViewBag.Employee as CorporateTrainingSystem.Domain.Entities.Employee;
+}
+
+<h2>Training History</h2>
+
+@if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
+{
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" asp-action="History" class="row g-3 align-items-end">
+                <div class="col-md-6">
+                    <label class="form-label">Select Employee</label>
+                    <select name="employeeId" asp-items="ViewBag.Employees" class="form-select" onchange="this.form.submit()">
+                        <option value="">-- Choose Employee --</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-secondary">View History</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@if (employee != null)
+{
+    <div class="card mb-4 bg-light">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <strong>Employee:</strong> @employee.FullName
+                </div>
+                <div class="col-md-3">
+                    <strong>Employee #:</strong> @employee.EmployeeNumber
+                </div>
+                <div class="col-md-3">
+                    <strong>Department:</strong> @employee.Department?.Name
+                </div>
+                <div class="col-md-3">
+                    <strong>Job Title:</strong> @employee.JobTitle
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">
+        No training history found for this employee.
+    </div>
+}
+else
+{
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Course</th>
+                <th>Category</th>
+                <th>Session Dates</th>
+                <th>Instructor</th>
+                <th>Status</th>
+                <th>Attendance</th>
+                <th>Assessment</th>
+                <th>Certification</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var record in Model)
+            {
+                <tr>
+                    <td>
+                        <strong>@record.CourseTitle</strong>
+                        <div class="text-muted small">@record.DurationHours hrs | Pass score: @record.PassingScore%</div>
+                    </td>
+                    <td>@record.Category</td>
+                    <td>@record.SessionStartDate.ToString("yyyy-MM-dd") to @record.SessionEndDate.ToString("yyyy-MM-dd")</td>
+                    <td>@record.InstructorName</td>
+                    <td>
+                        @if (record.Status == "Active")
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else if (record.Status == "Cancelled")
+                        {
+                            <span class="badge bg-secondary">Cancelled</span>
+                        }
+                        else if (record.Status == "Completed")
+                        {
+                            <span class="badge bg-primary">Completed</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-info">@record.Status</span>
+                        }
+                    </td>
+                    <td>
+                        @if (record.IsPresent.HasValue)
+                        {
+                            @(record.IsPresent.Value ? "Present" : "Absent")
+                        }
+                        else
+                        {
+                            <span class="text-muted">Not recorded</span>
+                        }
+                    </td>
+                    <td>
+                        @if (record.AssessmentScore.HasValue)
+                        {
+                            <span>@record.AssessmentScore.Value%</span>
+                            @if (record.Passed == true)
+                            {
+                                <span class="badge bg-success ms-1">Passed</span>
+                            }
+                            else if (record.Passed == false)
+                            {
+                                <span class="badge bg-danger ms-1">Failed</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted">Pending</span>
+                        }
+                    </td>
+                    <td>
+                        @if (!string.IsNullOrEmpty(record.CertificateNumber))
+                        {
+                            <div><strong>@record.CertificateNumber</strong></div>
+                            <small class="text-muted">Expires: @record.CertificateExpiryDate?.ToString("yyyy-MM-dd")</small>
+                            <span class="badge bg-success">@record.CertificateStatus</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">None</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<div class="mt-3">
+    <a asp-action="Index" class="btn btn-secondary">Back to Enrollments</a>
+</div>

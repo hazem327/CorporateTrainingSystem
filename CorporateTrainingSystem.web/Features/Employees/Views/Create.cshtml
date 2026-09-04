@@ -1,0 +1,44 @@
+@model CorporateTrainingSystem.Application.Features.Employees.CreateEmployee.CreateEmployeeCommand
+@{
+    ViewData["Title"] = "Add Employee";
+}
+
+<h2>Add Employee</h2>
+
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="EmployeeNumber" class="form-label"></label>
+        <input asp-for="EmployeeNumber" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="FullName" class="form-label"></label>
+        <input asp-for="FullName" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="JobTitle" class="form-label"></label>
+        <input asp-for="JobTitle" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="HireDate" class="form-label"></label>
+        <input asp-for="HireDate" class="form-control" type="date" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="DepartmentId" class="form-label">Department</label>
+        <select asp-for="DepartmentId" asp-items="ViewBag.Departments" class="form-select">
+            <option value="">-- Select Department --</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Add Employee</button>
+</form>
