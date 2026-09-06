@@ -16,6 +16,10 @@ using CorporateTrainingSystem.Application.Features.Enrollments.EnrollEmployee;
 using CorporateTrainingSystem.Application.Features.Enrollments.CancelEnrollment;
 using CorporateTrainingSystem.Application.Features.Enrollments.ListEnrollments;
 using CorporateTrainingSystem.Application.Features.Enrollments.GetTrainingHistory;
+using CorporateTrainingSystem.Application.Features.Assessments.RecordAttendance;
+using CorporateTrainingSystem.Application.Features.Assessments.RecordAssessmentResult;
+using CorporateTrainingSystem.Application.Features.Certifications.IssueCertificate;
+using CorporateTrainingSystem.Application.Features.Certifications.ListCertifications;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -63,7 +67,11 @@ builder.Services.AddScoped<ListEnrollmentsHandler>();
 builder.Services.AddScoped<GetTrainingHistoryHandler>();
 builder.Services.AddScoped<IValidator<EnrollEmployeeCommand>, EnrollEmployeeValidator>();
 builder.Services.AddScoped<IValidator<CancelEnrollmentCommand>, CancelEnrollmentValidator>();
-
+builder.Services.AddScoped<RecordAttendanceHandler>();
+builder.Services.AddScoped<RecordAssessmentResultHandler>();
+builder.Services.AddScoped<IValidator<RecordAssessmentResultCommand>, RecordAssessmentResultValidator>();
+builder.Services.AddScoped<IssueCertificateHandler>();
+builder.Services.AddScoped<ListCertificationsHandler>();
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())

@@ -104,6 +104,16 @@ else
                         {
                             <span class="badge bg-info">@item.Status</span>
                         }
+    @if (item.Status == "Active")
+{
+    <a asp-controller="Assessments" asp-action="Record" asp-route-enrollmentId="@item.Id" class="btn btn-sm btn-outline-primary">Record Result</a>
+}
+@if (item.Status == "Completed")
+{
+    <form asp-controller="Certifications" asp-action="Issue" asp-route-enrollmentId="@item.Id" method="post" class="d-inline">
+        <button type="submit" class="btn btn-sm btn-outline-success">Issue Certificate</button>
+    </form>
+}
                     </td>
                     <td>
                         <div class="d-flex gap-1">

@@ -1,0 +1,23 @@
+@model CorporateTrainingSystem.Application.Features.Assessments.RecordAssessmentResult.RecordAssessmentResultCommand
+@{
+    ViewData["Title"] = "Record Assessment";
+}
+
+<h2>Record Attendance & Assessment</h2>
+
+<form asp-action="Record" method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <input type="hidden" asp-for="EnrollmentId" />
+
+    <div class="mb-3 form-check">
+        <input type="checkbox" name="isPresent" class="form-check-input" value="true" checked />
+        <label class="form-check-label">Present</label>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Score" class="form-label">Score (0-100)</label>
+        <input asp-for="Score" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>

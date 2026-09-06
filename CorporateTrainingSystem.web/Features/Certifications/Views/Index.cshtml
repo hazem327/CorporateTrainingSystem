@@ -1,0 +1,54 @@
+@model List<CorporateTrainingSystem.Application.Features.Certifications.ListCertifications.CertificationListItem>
+@{
+    ViewData["Title"] = "Certifications";
+}
+
+<h2>Certifications</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Employee</th>
+            <th>Course</th>
+            <th>Certificate #</th>
+            <th>Issued</th>
+            <th>Expires</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var cert in Model)
+        {
+            <tr>
+                <td>@cert.EmployeeName</td>
+                <td>@cert.CourseTitle</td>
+                <td>@cert.CertificateNumber</td>
+                <td>@cert.IssueDate.ToString("yyyy-MM-dd")</td>
+                <td>@cert.ExpiryDate.ToString("yyyy-MM-dd")</td>
+                <td>
+                    @if (cert.Status == "Valid")
+                    {
+                        <span class="badge bg-success">Valid</span>
+                    }
+                    else if (cert.Status == "ExpiringSoon")
+                    {
+                        <span class="badge bg-warning text-dark">Expiring Soon</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">Expired</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
