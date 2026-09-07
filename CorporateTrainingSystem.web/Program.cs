@@ -1,7 +1,7 @@
 using CorporateTrainingSystem.Domain.Entities;
 using CorporateTrainingSystem.Infrastructure.Data;
-using CorporateTrainingSystem.Infrastructure.Identity;   
-using Microsoft.AspNetCore.Identity;                      
+using CorporateTrainingSystem.Infrastructure.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using CorporateTrainingSystem.Domain.Interfaces;
 using CorporateTrainingSystem.Infrastructure.Repositories;
@@ -20,6 +20,7 @@ using CorporateTrainingSystem.Application.Features.Assessments.RecordAttendance;
 using CorporateTrainingSystem.Application.Features.Assessments.RecordAssessmentResult;
 using CorporateTrainingSystem.Application.Features.Certifications.IssueCertificate;
 using CorporateTrainingSystem.Application.Features.Certifications.ListCertifications;
+using CorporateTrainingSystem.Web.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,6 +51,7 @@ builder.Services.Configure<Microsoft.AspNetCore.Mvc.Razor.RazorViewEngineOptions
 {
     options.ViewLocationFormats.Add("/Features/{1}/Views/{0}.cshtml");
 });
+
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<CreateCourseHandler>();
@@ -72,16 +74,25 @@ builder.Services.AddScoped<RecordAssessmentResultHandler>();
 builder.Services.AddScoped<IValidator<RecordAssessmentResultCommand>, RecordAssessmentResultValidator>();
 builder.Services.AddScoped<IssueCertificateHandler>();
 builder.Services.AddScoped<ListCertificationsHandler>();
+
 var app = builder.Build();
+
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+else
+{
+    app.UseDeveloperExceptionPage();
+}
+
 using (var scope = app.Services.CreateScope())
 {
     await DbSeeder.SeedRolesAndAdminAsync(scope.ServiceProvider);
+    await DemoDataSeeder.SeedDemoDataAsync(scope.ServiceProvider);
 }
 
 app.UseHttpsRedirection();
