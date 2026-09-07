@@ -1,6 +1,6 @@
 @model List<CorporateTrainingSystem.Application.Features.Certifications.ListCertifications.CertificationListItem>
 @{
-    ViewData["Title"] = "Certifications";
+    ViewData["Title"] = "Certifications & Credentials";
 
     var total = Model.Count;
     var activeCount = Model.Count(c => c.Status == "Valid");
@@ -10,118 +10,257 @@
 
 <div class="page-header-row">
     <div>
+        <div class="page-badge-label">
+            <span class="page-badge-dot"></span>
+            Audit &amp; Compliance Active
+        </div>
         <h1 class="page-title">Certifications &amp; Credentials</h1>
-        <p class="page-subtitle">Track employee credentials and certificate renewal timelines.</p>
+        <p class="page-subtitle">Track team credentials, manage recertification timelines, and verify regulatory compliance.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
+        {
+            <a asp-controller="Enrollments" asp-action="Index" class="btn-skill-primary">
+                <span class="material-symbols-outlined">assignment_turned_in</span>
+                <span>Review &amp; Issue</span>
+            </a>
+        }
     </div>
 </div>
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
+<!-- KPI Metrics Grid -->
+<div class="metric-grid">
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Active Credentials</span>
+                <div class="metric-value">@activeCount</div>
+            </div>
+            <div class="metric-icon-box green">
+                <span class="material-symbols-outlined text-[24px]">verified</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <span class="material-symbols-outlined" style="font-size: 16px; color: var(--tertiary);">check_circle</span>
+            <span>Compliant &amp; in good standing</span>
+        </div>
+    </div>
 
-<div class="stat-row">
-    <div class="stat-card">
-        <div class="stat-label">Total Certificates</div>
-        <div class="stat-value">@total</div>
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Expiring Soon</span>
+                <div class="metric-value" style="color: var(--secondary);">@expiringCount</div>
+            </div>
+            <div class="metric-icon-box orange">
+                <span class="material-symbols-outlined text-[24px]">schedule</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <span class="material-symbols-outlined" style="font-size: 16px; color: var(--secondary);">alarm</span>
+            <span>Within next 30-day window</span>
+        </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-label">Active</div>
-        <div class="stat-value">@activeCount</div>
+
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Expired Overdue</span>
+                <div class="metric-value" style="color: var(--error);">@expiredCount</div>
+            </div>
+            <div class="metric-icon-box red">
+                <span class="material-symbols-outlined text-[24px]">notification_important</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <span class="material-symbols-outlined" style="font-size: 16px; color: var(--error);">warning</span>
+            <span>Requires urgent recertification</span>
+        </div>
     </div>
-    <div class="stat-card">
-        <div class="stat-label">Expiring Soon</div>
-        <div class="stat-value">@expiringCount</div>
-    </div>
-    <div class="stat-card">
-        <div class="stat-label">Expired</div>
-        <div class="stat-value">@expiredCount</div>
+
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Total Issued</span>
+                <div class="metric-value">@total</div>
+            </div>
+            <div class="metric-icon-box purple">
+                <span class="material-symbols-outlined text-[24px]">workspace_premium</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <span>Overall organization certifications</span>
+        </div>
     </div>
 </div>
 
-<div class="pill-row">
-    <a href="#" class="pill active" data-filter="all">All (@total)</a>
-    <a href="#" class="pill" data-filter="Valid">Active (@activeCount)</a>
-    <a href="#" class="pill" data-filter="ExpiringSoon">Expiring Soon (@expiringCount)</a>
-    <a href="#" class="pill" data-filter="Expired">Expired (@expiredCount)</a>
+<!-- Search & Smart Filter Bar -->
+<div class="filter-card">
+    <div class="filter-row-top">
+        <div class="search-input-wrap">
+            <span class="material-symbols-outlined">search</span>
+            <input type="text" id="certSearchInput" placeholder="Search by employee, certificate ID, course..." />
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a asp-action="Index" class="btn-skill-outline btn-skill-sm">
+                <span class="material-symbols-outlined" style="font-size: 16px;">restart_alt</span>
+                <span>Reset Filters</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Status Filter Pills -->
+    <div class="pill-filter-group">
+        <button type="button" class="filter-pill active" data-filter="all">
+            All (@total)
+        </button>
+        <button type="button" class="filter-pill" data-filter="Valid">
+            <span class="pill-dot green"></span> Active (@activeCount)
+        </button>
+        <button type="button" class="filter-pill" data-filter="ExpiringSoon">
+            <span class="pill-dot orange"></span> Expiring Soon (@expiringCount)
+        </button>
+        <button type="button" class="filter-pill" data-filter="Expired">
+            <span class="pill-dot red"></span> Expired (@expiredCount)
+        </button>
+    </div>
 </div>
 
-<div class="op-table-wrap">
-    <table class="op-table" id="certTable">
-        <thead>
-            <tr>
-                <th>Employee</th>
-                <th>Certification &amp; Standard</th>
-                <th>Issue Date</th>
-                <th>Expiry Date</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var cert in Model)
-            {
-                var initials = string.Join("", cert.EmployeeName.Split(' ')
-                    .Where(p => p.Length > 0)
-                    .Select(p => p[0]))
-                    .ToUpper();
-                if (initials.Length > 2) { initials = initials.Substring(0, 2); }
-
-                var daysLeft = (cert.ExpiryDate.Date - DateTime.Today).Days;
-
-                <tr data-status="@cert.Status">
-                    <td>
-                        <div class="employee-cell">
-                            <div class="avatar-circle">@initials</div>
-                            <div>
-                                <div class="primary-text">@cert.EmployeeName</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="primary-text">@cert.CourseTitle</div>
-                        <div class="muted-text">@cert.CertificateNumber</div>
-                    </td>
-                    <td>@cert.IssueDate.ToString("MMM d, yyyy")</td>
-                    <td>
-                        <div class="primary-text">@cert.ExpiryDate.ToString("MMM d, yyyy")</div>
-                    </td>
-                    <td class="status-cell">
-                        @if (cert.Status == "Valid")
-                        {
-                            <span class="badge-status badge-good">Active</span>
-                            <span class="status-sub">@daysLeft days remaining</span>
-                        }
-                        else if (cert.Status == "ExpiringSoon")
-                        {
-                            <span class="badge-status badge-warn">Expiring Soon</span>
-                            <span class="status-sub">in @daysLeft days</span>
-                        }
-                        else
-                        {
-                            <span class="badge-status badge-bad">Expired</span>
-                            <span class="status-sub overdue">@(-daysLeft) days overdue</span>
-                        }
-                    </td>
+<!-- Certifications Table -->
+<div class="table-container-card">
+    <div class="table-responsive">
+        <table class="skillops-table" id="certificationsTable">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Certification &amp; Course</th>
+                    <th>Issue Date</th>
+                    <th>Expiry Date</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @if (Model == null || !Model.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <span class="material-symbols-outlined" style="font-size: 40px; color: var(--outline);">verified_user</span>
+                            <p class="mt-2 mb-0">No certificates currently issued.</p>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var cert in Model)
+                    {
+                        var initials = string.Join("", cert.EmployeeName.Split(' ')
+                            .Where(p => p.Length > 0)
+                            .Select(p => p[0]))
+                            .ToUpper();
+                        if (initials.Length > 2) { initials = initials.Substring(0, 2); }
+                        if (string.IsNullOrEmpty(initials)) { initials = "EM"; }
+
+                        var daysLeft = (cert.ExpiryDate.Date - DateTime.Today).Days;
+
+                        <tr data-status="@cert.Status" data-search="@cert.EmployeeName.ToLower() @cert.CourseTitle.ToLower() @cert.CertificateNumber.ToLower()">
+                            <td>
+                                <div class="employee-profile-cell">
+                                    <div class="avatar-badge">@initials</div>
+                                    <div>
+                                        <div class="table-cell-title">@cert.EmployeeName</div>
+                                        <div class="table-cell-sub">Learner</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-cell-title">@cert.CourseTitle</div>
+                                <div class="table-cell-sub" style="font-family: monospace; font-weight: 600; color: var(--primary-container);">
+                                    @cert.CertificateNumber
+                                </div>
+                            </td>
+                            <td>
+                                <span class="table-cell-title">@cert.IssueDate.ToString("MMM d, yyyy")</span>
+                            </td>
+                            <td>
+                                <div>
+                                    <span class="table-cell-title @(cert.Status == "Expired" ? "text-danger" : cert.Status == "ExpiringSoon" ? "text-warning" : "")">
+                                        @cert.ExpiryDate.ToString("MMM d, yyyy")
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                @if (cert.Status == "Valid")
+                                {
+                                    <span class="status-badge valid">
+                                        <span class="status-dot"></span>
+                                        Active
+                                    </span>
+                                    <span class="status-subtext">@daysLeft days remaining</span>
+                                }
+                                else if (cert.Status == "ExpiringSoon")
+                                {
+                                    <span class="status-badge expiring-soon">
+                                        <span class="status-dot"></span>
+                                        Expiring Soon
+                                    </span>
+                                    <span class="status-subtext">in @daysLeft days</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge expired">
+                                        <span class="status-dot"></span>
+                                        Expired
+                                    </span>
+                                    <span class="status-subtext overdue">@Math.Abs(daysLeft) days overdue</span>
+                                }
+                            </td>
+                            <td style="text-align: right;">
+                                <a asp-controller="Enrollments" asp-action="History" class="btn-skill-subtle">
+                                    <span class="material-symbols-outlined" style="font-size: 16px;">history</span>
+                                    <span>History</span>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Upcoming Compliance Banner -->
+<div class="promo-banner">
+    <div class="d-flex align-items-center gap-3">
+        <div class="promo-icon-wrap">
+            <span class="material-symbols-outlined" style="font-size: 28px;">workspace_premium</span>
+        </div>
+        <div>
+            <h3 class="headline-font" style="font-size: 18px; color: white;">Compliance &amp; Expiry Governance Cycle</h3>
+            <p style="margin: 2px 0 0 0; font-size: 13.5px; opacity: 0.9;">
+                All certifications automatically calculate validity duration upon issuance and preserve business records.
+            </p>
+        </div>
+    </div>
+    <div class="d-flex align-items-center gap-2 shrink-0">
+        <a asp-controller="Sessions" asp-action="Index" class="btn-skill-outline" style="background-color: white; border: none; color: var(--primary) !important;">
+            <span class="material-symbols-outlined" style="font-size: 18px;">event</span>
+            <span>View Upcoming Sessions</span>
+        </a>
+    </div>
 </div>
 
 @section Scripts {
     <script>
-        document.querySelectorAll('.pill').forEach(function (pill) {
+        // Pill filter toggle
+        document.querySelectorAll('.filter-pill').forEach(function (pill) {
             pill.addEventListener('click', function (e) {
                 e.preventDefault();
-                document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+                document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
                 this.classList.add('active');
 
                 var filter = this.getAttribute('data-filter');
-                document.querySelectorAll('#certTable tbody tr').forEach(function (row) {
+                document.querySelectorAll('#certificationsTable tbody tr').forEach(function (row) {
                     if (filter === 'all' || row.getAttribute('data-status') === filter) {
                         row.style.display = '';
                     } else {
@@ -130,5 +269,21 @@
                 });
             });
         });
+
+        // Dedicated search input
+        var searchInput = document.getElementById('certSearchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                var q = this.value.toLowerCase().trim();
+                document.querySelectorAll('#certificationsTable tbody tr').forEach(function (row) {
+                    var dataSearch = row.getAttribute('data-search') || '';
+                    if (q === '' || dataSearch.includes(q)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        }
     </script>
 }

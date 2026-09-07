@@ -1,32 +1,54 @@
 @model CorporateTrainingSystem.Web.Features.Account.LoginViewModel
 @{
-    ViewData["Title"] = "Log in";
+    ViewData["Title"] = "Log In";
 }
 
-<h2>Log in</h2>
+<div class="row justify-content-center pt-4">
+    <div class="col-md-5">
+        <div class="form-card-container">
+            <div class="text-center mb-4">
+                <div class="sidebar-brand-icon mx-auto mb-2" style="width: 48px; height: 48px; font-size: 20px;">SO</div>
+                <h2 class="page-title" style="font-size: 24px;">Welcome to SkillOps</h2>
+                <p class="page-subtitle">Sign in to access corporate training &amp; certification management</p>
+            </div>
 
-<form asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <form asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-    <div class="mb-3">
-        <label asp-for="Email" class="form-label"></label>
-        <input asp-for="Email" class="form-control" />
-        <span asp-validation-for="Email" class="text-danger"></span>
+                <div class="form-group-custom">
+                    <label asp-for="Email">Corporate Email Address</label>
+                    <input asp-for="Email" class="form-control-custom" placeholder="name@company.com" required autofocus />
+                    <span asp-validation-for="Email" class="text-danger small"></span>
+                </div>
+
+                <div class="form-group-custom">
+                    <label asp-for="Password">Password</label>
+                    <input asp-for="Password" type="password" class="form-control-custom" placeholder="Enter your password" required />
+                    <span asp-validation-for="Password" class="text-danger small"></span>
+                </div>
+
+                <div class="form-group-custom form-check mb-4">
+                    <input asp-for="RememberMe" class="form-check-input" id="rememberMeCheck" />
+                    <label asp-for="RememberMe" class="form-check-label" for="rememberMeCheck">Remember my session</label>
+                </div>
+
+                <button type="submit" class="btn-skill-primary w-100 justify-content-center py-2">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">login</span>
+                    <span>Sign In</span>
+                </button>
+            </form>
+
+            <div class="mt-4 pt-3 border-top text-center">
+                <div class="p-3 bg-light rounded text-start">
+                    <div class="font-weight-bold mb-1" style="font-size: 12px; text-transform: uppercase; color: var(--outline);">Default Demo Admin Credentials:</div>
+                    <div style="font-size: 13px;"><strong>Email:</strong> admin@corporatetraining.local</div>
+                    <div style="font-size: 13px;"><strong>Password:</strong> Admin@12345</div>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <div class="mb-3">
-        <label asp-for="Password" class="form-label"></label>
-        <input asp-for="Password" class="form-control" />
-        <span asp-validation-for="Password" class="text-danger"></span>
-    </div>
-
-    <div class="mb-3 form-check">
-        <input asp-for="RememberMe" class="form-check-input" />
-        <label asp-for="RememberMe" class="form-check-label"></label>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Log in</button>
-</form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

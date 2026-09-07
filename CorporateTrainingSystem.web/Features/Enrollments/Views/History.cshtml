@@ -2,147 +2,190 @@
 @{
     ViewData["Title"] = "Training History";
     var employee = ViewBag.Employee as CorporateTrainingSystem.Domain.Entities.Employee;
+    var totalCompleted = Model.Count(m => m.Status == "Completed");
+    var certsEarned = Model.Count(m => !string.IsNullOrEmpty(m.CertificateNumber));
 }
 
-<h2>Training History</h2>
+<div class="page-header-row">
+    <div>
+        <div class="page-badge-label">
+            <span class="page-badge-dot"></span>
+            Learner Transcript
+        </div>
+        <h1 class="page-title">Training History &amp; Transcripts</h1>
+        <p class="page-subtitle">Review historical courses attended, attendance records, exam scores, and earned certifications.</p>
+    </div>
+    <div>
+        <a asp-action="Index" class="btn-skill-outline">
+            <span class="material-symbols-outlined" style="font-size: 18px;">arrow_back</span>
+            <span>Back to Enrollments</span>
+        </a>
+    </div>
+</div>
 
 @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
 {
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="get" asp-action="History" class="row g-3 align-items-end">
-                <div class="col-md-6">
-                    <label class="form-label">Select Employee</label>
-                    <select name="employeeId" asp-items="ViewBag.Employees" class="form-select" onchange="this.form.submit()">
-                        <option value="">-- Choose Employee --</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-secondary">View History</button>
-                </div>
-            </form>
-        </div>
+    <div class="filter-card">
+        <form method="get" asp-action="History" class="row g-3 align-items-end">
+            <div class="col-md-9">
+                <label class="form-label font-weight-bold" style="font-size: 12px; text-transform: uppercase; color: var(--outline);">Select Learner Profile</label>
+                <select name="employeeId" asp-items="ViewBag.Employees" class="form-control-custom" onchange="this.form.submit()">
+                    <option value="">-- Choose Employee --</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn-skill-primary w-100 justify-content-center">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">search</span>
+                    <span>View Transcript</span>
+                </button>
+            </div>
+        </form>
     </div>
 }
 
 @if (employee != null)
 {
-    <div class="card mb-4 bg-light">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-3">
-                    <strong>Employee:</strong> @employee.FullName
+    <div class="metric-card mb-4" style="border-left: 4px solid var(--primary-container);">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+            <div class="employee-profile-cell">
+                <div class="avatar-badge" style="width: 48px; height: 48px; font-size: 16px;">
+                    @(employee.FullName.Length >= 2 ? employee.FullName.Substring(0, 2).ToUpper() : "EM")
                 </div>
-                <div class="col-md-3">
-                    <strong>Employee #:</strong> @employee.EmployeeNumber
+                <div>
+                    <h3 class="headline-font" style="font-size: 20px;">@employee.FullName</h3>
+                    <div class="table-cell-sub">
+                        <span>#@employee.EmployeeNumber</span> &bull; 
+                        <span>@employee.JobTitle</span> &bull; 
+                        <strong>@employee.Department?.Name</strong>
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    <strong>Department:</strong> @employee.Department?.Name
+            </div>
+
+            <div class="d-flex align-items-center gap-4">
+                <div class="text-center">
+                    <span class="metric-label">Completed</span>
+                    <div class="metric-value" style="font-size: 22px;">@totalCompleted</div>
                 </div>
-                <div class="col-md-3">
-                    <strong>Job Title:</strong> @employee.JobTitle
+                <div class="text-center">
+                    <span class="metric-label">Certificates</span>
+                    <div class="metric-value" style="font-size: 22px; color: var(--tertiary);">@certsEarned</div>
                 </div>
             </div>
         </div>
     </div>
 }
 
-@if (Model == null || !Model.Any())
-{
-    <div class="alert alert-info">
-        No training history found for this employee.
-    </div>
-}
-else
-{
-    <table class="table table-striped align-middle">
-        <thead>
-            <tr>
-                <th>Course</th>
-                <th>Category</th>
-                <th>Session Dates</th>
-                <th>Instructor</th>
-                <th>Status</th>
-                <th>Attendance</th>
-                <th>Assessment</th>
-                <th>Certification</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var record in Model)
-            {
+<!-- History Table Card -->
+<div class="table-container-card">
+    <div class="table-responsive">
+        <table class="skillops-table" id="historyTable">
+            <thead>
                 <tr>
-                    <td>
-                        <strong>@record.CourseTitle</strong>
-                        <div class="text-muted small">@record.DurationHours hrs | Pass score: @record.PassingScore%</div>
-                    </td>
-                    <td>@record.Category</td>
-                    <td>@record.SessionStartDate.ToString("yyyy-MM-dd") to @record.SessionEndDate.ToString("yyyy-MM-dd")</td>
-                    <td>@record.InstructorName</td>
-                    <td>
-                        @if (record.Status == "Active")
-                        {
-                            <span class="badge bg-success">Active</span>
-                        }
-                        else if (record.Status == "Cancelled")
-                        {
-                            <span class="badge bg-secondary">Cancelled</span>
-                        }
-                        else if (record.Status == "Completed")
-                        {
-                            <span class="badge bg-primary">Completed</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-info">@record.Status</span>
-                        }
-                    </td>
-                    <td>
-                        @if (record.IsPresent.HasValue)
-                        {
-                            @(record.IsPresent.Value ? "Present" : "Absent")
-                        }
-                        else
-                        {
-                            <span class="text-muted">Not recorded</span>
-                        }
-                    </td>
-                    <td>
-                        @if (record.AssessmentScore.HasValue)
-                        {
-                            <span>@record.AssessmentScore.Value%</span>
-                            @if (record.Passed == true)
-                            {
-                                <span class="badge bg-success ms-1">Passed</span>
-                            }
-                            else if (record.Passed == false)
-                            {
-                                <span class="badge bg-danger ms-1">Failed</span>
-                            }
-                        }
-                        else
-                        {
-                            <span class="text-muted">Pending</span>
-                        }
-                    </td>
-                    <td>
-                        @if (!string.IsNullOrEmpty(record.CertificateNumber))
-                        {
-                            <div><strong>@record.CertificateNumber</strong></div>
-                            <small class="text-muted">Expires: @record.CertificateExpiryDate?.ToString("yyyy-MM-dd")</small>
-                            <span class="badge bg-success">@record.CertificateStatus</span>
-                        }
-                        else
-                        {
-                            <span class="text-muted">None</span>
-                        }
-                    </td>
+                    <th>Course &amp; Category</th>
+                    <th>Session Dates</th>
+                    <th>Instructor</th>
+                    <th>Status</th>
+                    <th>Attendance</th>
+                    <th>Assessment</th>
+                    <th>Certification</th>
                 </tr>
-            }
-        </tbody>
-    </table>
-}
-
-<div class="mt-3">
-    <a asp-action="Index" class="btn btn-secondary">Back to Enrollments</a>
+            </thead>
+            <tbody>
+                @if (Model == null || !Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <span class="material-symbols-outlined" style="font-size: 40px; color: var(--outline);">history_edu</span>
+                            <p class="mt-2 mb-0">No training history found for this employee.</p>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var record in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="table-cell-title">@record.CourseTitle</div>
+                                <div class="table-cell-sub">@record.Category &bull; @record.DurationHours hrs (Pass: @record.PassingScore%)</div>
+                            </td>
+                            <td>
+                                <div class="table-cell-title">@record.SessionStartDate.ToString("MMM d") - @record.SessionEndDate.ToString("MMM d, yyyy")</div>
+                                <div class="table-cell-sub">@record.Location</div>
+                            </td>
+                            <td>
+                                <span class="table-cell-title">@record.InstructorName</span>
+                            </td>
+                            <td>
+                                @if (record.Status == "Active")
+                                {
+                                    <span class="status-badge active"><span class="status-dot"></span>Active</span>
+                                }
+                                else if (record.Status == "Completed")
+                                {
+                                    <span class="status-badge completed"><span class="status-dot"></span>Completed</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge cancelled"><span class="status-dot"></span>Cancelled</span>
+                                }
+                            </td>
+                            <td>
+                                @if (record.IsPresent.HasValue)
+                                {
+                                    if (record.IsPresent.Value)
+                                    {
+                                        <span class="status-badge valid"><span class="status-dot"></span>Present</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge danger"><span class="status-dot"></span>Absent</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="status-subtext">Pending</span>
+                                }
+                            </td>
+                            <td>
+                                @if (record.AssessmentScore.HasValue)
+                                {
+                                    <div>
+                                        <strong style="font-size: 15px;">@record.AssessmentScore.Value%</strong>
+                                        @if (record.Passed == true)
+                                        {
+                                            <span class="status-badge valid ms-1">Passed</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="status-badge danger ms-1">Failed</span>
+                                        }
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="status-subtext">Not Assessed</span>
+                                }
+                            </td>
+                            <td>
+                                @if (!string.IsNullOrEmpty(record.CertificateNumber))
+                                {
+                                    <div>
+                                        <div style="font-family: monospace; font-weight: 600; color: var(--primary-container);">
+                                            @record.CertificateNumber
+                                        </div>
+                                        <span class="status-subtext">Expires @record.CertificateExpiryDate?.ToString("yyyy-MM-dd")</span>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <span class="status-subtext">None</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
 </div>

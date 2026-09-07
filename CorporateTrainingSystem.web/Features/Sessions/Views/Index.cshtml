@@ -1,71 +1,205 @@
 @model List<CorporateTrainingSystem.Application.Features.Sessions.ListSessions.SessionListItem>
 @{
     ViewData["Title"] = "Training Sessions";
+    var totalSessions = Model.Count;
+    var scheduledSessions = Model.Count(s => s.Status == "Scheduled");
+    var totalSeats = Model.Sum(s => s.Capacity);
+    var totalEnrolled = Model.Sum(s => s.EnrolledCount);
 }
 
-<h2>Training Sessions</h2>
-
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
-
-@if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
-{
-    <a asp-action="Create" class="btn btn-primary mb-3">Schedule Session</a>
-}
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Course</th>
-            <th>Instructor</th>
-            <th>Start</th>
-            <th>End</th>
-            <th>Enrolled / Capacity</th>
-            <th>Location</th>
-            <th>Status</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var s in Model)
+<div class="page-header-row">
+    <div>
+        <div class="page-badge-label">
+            <span class="page-badge-dot"></span>
+            Schedule &amp; Logistics
+        </div>
+        <h1 class="page-title">Training Sessions</h1>
+        <p class="page-subtitle">Manage upcoming sessions, instructor assignments, capacities, and learner rosters.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
         {
-            <tr>
-                <td>@s.CourseTitle</td>
-                <td>@s.InstructorName</td>
-                <td>@s.StartDate.ToShortDateString()</td>
-                <td>@s.EndDate.ToShortDateString()</td>
-                <td>@s.EnrolledCount / @s.Capacity</td>
-                <td>@s.Location</td>
-                <td>
-                    @if (s.Status == "Scheduled")
-                    {
-                        <span class="badge bg-success">Scheduled</span>
-                    }
-                    else if (s.Status == "Cancelled")
-                    {
-                        <span class="badge bg-danger">Cancelled</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">@s.Status</span>
-                    }
-                </td>
-                <td>
-                    <div class="d-flex gap-1">
-                        @if (s.Status == "Scheduled" && s.EnrolledCount < s.Capacity)
-                        {
-                            <a asp-controller="Enrollments" asp-action="Create" asp-route-sessionId="@s.Id" class="btn btn-primary btn-sm">Enroll</a>
-                        }
-                        else if (s.Status == "Scheduled" && s.EnrolledCount >= s.Capacity)
-                        {
-                            <span class="badge bg-warning text-dark align-self-center">Full</span>
-                        }
-                        <a asp-controller="Enrollments" asp-action="Index" asp-route-sessionId="@s.Id" class="btn btn-outline-secondary btn-sm">Enrollments</a>
-                    </div>
-                </td>
-            </tr>
+            <a asp-action="Create" class="btn-skill-primary">
+                <span class="material-symbols-outlined">calendar_add_on</span>
+                <span>Schedule Session</span>
+            </a>
         }
-    </tbody>
-</table>
+    </div>
+</div>
+
+<!-- KPI Metrics Grid -->
+<div class="metric-grid">
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Scheduled Sessions</span>
+                <div class="metric-value">@scheduledSessions</div>
+            </div>
+            <div class="metric-icon-box green">
+                <span class="material-symbols-outlined text-[24px]">calendar_month</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <span>Open or upcoming delivery</span>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Enrolled Learners</span>
+                <div class="metric-value" style="color: var(--primary-container);">@totalEnrolled</div>
+            </div>
+            <div class="metric-icon-box purple">
+                <span class="material-symbols-outlined text-[24px]">groups</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <span>Across all scheduled cohorts</span>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Available Capacity</span>
+                <div class="metric-value">@(totalSeats - totalEnrolled)</div>
+            </div>
+            <div class="metric-icon-box orange">
+                <span class="material-symbols-outlined text-[24px]">event_seat</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <span>Remaining open seats</span>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Total Cohorts</span>
+                <div class="metric-value">@totalSessions</div>
+            </div>
+            <div class="metric-icon-box purple">
+                <span class="material-symbols-outlined text-[24px]">school</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <span>All historical &amp; active cohorts</span>
+        </div>
+    </div>
+</div>
+
+<!-- Sessions Table Card -->
+<div class="table-container-card">
+    <div class="table-responsive">
+        <table class="skillops-table" id="sessionsTable">
+            <thead>
+                <tr>
+                    <th>Course</th>
+                    <th>Instructor</th>
+                    <th>Dates</th>
+                    <th>Capacity / Seats</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model == null || !Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <span class="material-symbols-outlined" style="font-size: 40px; color: var(--outline);">event_busy</span>
+                            <p class="mt-2 mb-0">No training sessions scheduled.</p>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var s in Model)
+                    {
+                        var seatsLeft = s.Capacity - s.EnrolledCount;
+                        var isFull = seatsLeft <= 0;
+
+                        <tr data-search="@s.CourseTitle.ToLower() @s.InstructorName.ToLower() @s.Location.ToLower()">
+                            <td>
+                                <div class="table-cell-title">@s.CourseTitle</div>
+                                <div class="table-cell-sub">Session #@s.Id</div>
+                            </td>
+                            <td>
+                                <div class="employee-profile-cell">
+                                    <div class="avatar-badge teal" style="width: 32px; height: 32px; font-size: 11px;">
+                                        @(s.InstructorName.Length >= 2 ? s.InstructorName.Substring(0, 2).ToUpper() : "IN")
+                                    </div>
+                                    <div class="table-cell-title">@s.InstructorName</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="table-cell-title">@s.StartDate.ToString("MMM d, yyyy")</div>
+                                <div class="table-cell-sub">to @s.EndDate.ToString("MMM d, yyyy")</div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="table-cell-title">@s.EnrolledCount / @s.Capacity</span>
+                                    @if (isFull)
+                                    {
+                                        <span class="status-badge warning" style="padding: 2px 7px; font-size: 11px;">Full</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-subtext" style="margin: 0;">(@seatsLeft left)</span>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-1">
+                                    <span class="material-symbols-outlined" style="font-size: 16px; color: var(--outline);">location_on</span>
+                                    <span>@s.Location</span>
+                                </div>
+                            </td>
+                            <td>
+                                @if (s.Status == "Scheduled")
+                                {
+                                    <span class="status-badge scheduled">
+                                        <span class="status-dot"></span>
+                                        Scheduled
+                                    </span>
+                                }
+                                else if (s.Status == "Cancelled")
+                                {
+                                    <span class="status-badge cancelled">
+                                        <span class="status-dot"></span>
+                                        Cancelled
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge completed">
+                                        <span class="status-dot"></span>
+                                        @s.Status
+                                    </span>
+                                }
+                            </td>
+                            <td style="text-align: right;">
+                                <div class="d-inline-flex gap-2">
+                                    @if (s.Status == "Scheduled" && !isFull)
+                                    {
+                                        <a asp-controller="Enrollments" asp-action="Create" asp-route-sessionId="@s.Id" class="btn-skill-primary btn-skill-sm">
+                                            <span class="material-symbols-outlined" style="font-size: 14px;">how_to_reg</span>
+                                            <span>Enroll</span>
+                                        </a>
+                                    }
+                                    <a asp-controller="Enrollments" asp-action="Index" asp-route-sessionId="@s.Id" class="btn-skill-outline btn-skill-sm">
+                                        <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
+                                        <span>Roster</span>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

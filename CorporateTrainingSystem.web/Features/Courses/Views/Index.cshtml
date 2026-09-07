@@ -1,38 +1,184 @@
 @model List<CorporateTrainingSystem.Application.Features.Courses.ListCourses.CourseListItem>
 @{
-    ViewData["Title"] = "Courses";
+    ViewData["Title"] = "Training Courses";
+    var totalCourses = Model.Count;
+    var activeCourses = Model.Count(c => c.IsActive);
 }
 
-<h2>Courses</h2>
-
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
-
-@if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
-{
-    <a asp-action="Create" class="btn btn-primary mb-3">Create Course</a>
-}
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Title</th>
-            <th>Category</th>
-            <th>Duration (hrs)</th>
-            <th>Active</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var course in Model)
+<div class="page-header-row">
+    <div>
+        <div class="page-badge-label">
+            <span class="page-badge-dot"></span>
+            Curriculum Catalog
+        </div>
+        <h1 class="page-title">Courses &amp; Programs</h1>
+        <p class="page-subtitle">Manage organizational learning curricula, passing standards, and validity lifecycles.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
         {
-            <tr>
-                <td>@course.Title</td>
-                <td>@course.Category</td>
-                <td>@course.DurationHours</td>
-                <td>@(course.IsActive ? "Yes" : "No")</td>
-            </tr>
+            <a asp-action="Create" class="btn-skill-primary">
+                <span class="material-symbols-outlined">add_circle</span>
+                <span>Create Course</span>
+            </a>
         }
-    </tbody>
-</table>
+    </div>
+</div>
+
+<!-- KPI Metrics Grid -->
+<div class="metric-grid">
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Total Courses</span>
+                <div class="metric-value">@totalCourses</div>
+            </div>
+            <div class="metric-icon-box purple">
+                <span class="material-symbols-outlined text-[24px]">menu_book</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <span>Configured learning curricula</span>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Active Offerings</span>
+                <div class="metric-value" style="color: var(--tertiary);">@activeCourses</div>
+            </div>
+            <div class="metric-icon-box green">
+                <span class="material-symbols-outlined text-[24px]">check_circle</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <span>Available for session scheduling</span>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Scheduled Sessions</span>
+                <div class="metric-value">View</div>
+            </div>
+            <div class="metric-icon-box orange">
+                <span class="material-symbols-outlined text-[24px]">calendar_month</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <a asp-controller="Sessions" asp-action="Index" class="btn-skill-subtle btn-skill-sm">
+                <span>Go to Sessions</span>
+                <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Enrolled Learners</span>
+                <div class="metric-value">Tracking</div>
+            </div>
+            <div class="metric-icon-box purple">
+                <span class="material-symbols-outlined text-[24px]">group</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <a asp-controller="Enrollments" asp-action="Index" class="btn-skill-subtle btn-skill-sm">
+                <span>View Enrollments</span>
+                <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Courses Table Card -->
+<div class="table-container-card">
+    <div class="table-responsive">
+        <table class="skillops-table" id="coursesTable">
+            <thead>
+                <tr>
+                    <th>Course Title</th>
+                    <th>Category</th>
+                    <th>Duration</th>
+                    <th>Passing Score</th>
+                    <th>Validity</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model == null || !Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <span class="material-symbols-outlined" style="font-size: 40px; color: var(--outline);">menu_book</span>
+                            <p class="mt-2 mb-0">No courses defined yet.</p>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var course in Model)
+                    {
+                        <tr data-search="@course.Title.ToLower() @course.Category.ToLower()">
+                            <td>
+                                <div class="table-cell-title">@course.Title</div>
+                                <div class="table-cell-sub">ID #@course.Id</div>
+                            </td>
+                            <td>
+                                <span class="status-badge primary">
+                                    <span class="status-dot"></span>
+                                    @course.Category
+                                </span>
+                            </td>
+                            <td>
+                                <span class="table-cell-title">@course.DurationHours hrs</span>
+                            </td>
+                            <td>
+                                <span class="table-cell-title">@course.PassingScore%</span>
+                                <span class="status-subtext">Required to pass</span>
+                            </td>
+                            <td>
+                                <span class="table-cell-title">@course.CertificateValidityMonths mos</span>
+                            </td>
+                            <td>
+                                @if (course.IsActive)
+                                {
+                                    <span class="status-badge valid">
+                                        <span class="status-dot"></span>
+                                        Active
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge neutral">
+                                        <span class="status-dot"></span>
+                                        Inactive
+                                    </span>
+                                }
+                            </td>
+                            <td style="text-align: right;">
+                                <div class="d-inline-flex gap-2">
+                                    @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
+                                    {
+                                        <a asp-controller="Sessions" asp-action="Create" class="btn-skill-subtle">
+                                            <span class="material-symbols-outlined" style="font-size: 15px;">calendar_add_on</span>
+                                            <span>Schedule</span>
+                                        </a>
+                                    }
+                                    <a asp-controller="Sessions" asp-action="Index" class="btn-skill-outline btn-skill-sm">
+                                        <span class="material-symbols-outlined" style="font-size: 15px;">visibility</span>
+                                        <span>Sessions</span>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

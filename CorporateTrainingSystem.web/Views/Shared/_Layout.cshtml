@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity
 @using CorporateTrainingSystem.Infrastructure.Identity
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
@@ -7,113 +7,219 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Corporate Training System</title>
+    <title>@ViewData["Title"] - SkillOps Corporate Training &amp; Certification</title>
+
+    <!-- Google Fonts: Inter & Space Grotesk -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+
+    <!-- Google Material Symbols Outlined Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+
+    <!-- Bootstrap 5 CSS for grid & utility support -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- Custom SkillOps System CSS -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
 <body>
     <div class="app-shell">
 
+        <!-- Fixed Left Sidebar -->
         <aside class="sidebar">
             <div>
-                <div class="sidebar-top">
-                    <div class="sidebar-brand-row">
-                        <div class="sidebar-logo-mark">CT</div>
-                        <div>
-                            <div class="sidebar-brand">Corporate Training</div>
-                            <div class="sidebar-subbrand">Certification System</div>
-                        </div>
+                <!-- Brand Header -->
+                <div class="sidebar-brand-wrapper">
+                    <div class="sidebar-brand-icon">SO</div>
+                    <div>
+                        <div class="sidebar-brand-title">SkillOps</div>
+                        <div class="sidebar-brand-subtitle">Operations</div>
                     </div>
                 </div>
 
-                <div class="sidebar-section-label">Operations</div>
+                <!-- Navigation Links -->
+                <div class="sidebar-content">
+                    <div class="sidebar-section-heading">Workspace</div>
 
-                @{
-                    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
-                }
+                    @{
+                        var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+                        var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+                    }
 
-                <ul class="sidebar-nav">
-                    <li>
-                        <a asp-controller="Courses" asp-action="Index"
-                           class="@(currentController == "Courses" ? "active" : "")">
-                            Courses
-                        </a>
-                    </li>
-                    <li>
-                        <a asp-controller="Sessions" asp-action="Index"
-                           class="@(currentController == "Sessions" ? "active" : "")">
-                            Sessions
-                        </a>
-                    </li>
-                    @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
-                    {
-                        <li>
-                            <a asp-controller="Employees" asp-action="Index"
-                               class="@(currentController == "Employees" ? "active" : "")">
-                                Employees
+                    <ul class="sidebar-nav">
+                        <li class="sidebar-nav-item">
+                            <a asp-controller="Home" asp-action="Index"
+                               class="@(currentController == "Home" ? "active" : "")">
+                                <span class="material-symbols-outlined">dashboard</span>
+                                <span>Overview</span>
                             </a>
                         </li>
-                    }
-                    <li>
-                        <a asp-controller="Enrollments" asp-action="Index"
-                           class="@(currentController == "Enrollments" ? "active" : "")">
-                            Enrollments
-                        </a>
-                    </li>
-                    <li>
-                        <a asp-controller="Certifications" asp-action="Index"
-                           class="@(currentController == "Certifications" ? "active" : "")">
-                            Certifications
-                        </a>
-                    </li>
-                    @if (User.IsInRole("Administrator"))
-                    {
-                        <li>
-                            <a asp-controller="Account" asp-action="Register"
-                               class="@(currentController == "Account" ? "active" : "")">
-                                Add User
+                        <li class="sidebar-nav-item">
+                            <a asp-controller="Courses" asp-action="Index"
+                               class="@(currentController == "Courses" ? "active" : "")">
+                                <span class="material-symbols-outlined">menu_book</span>
+                                <span>Courses</span>
                             </a>
                         </li>
-                    }
-                </ul>
+                        <li class="sidebar-nav-item">
+                            <a asp-controller="Sessions" asp-action="Index"
+                               class="@(currentController == "Sessions" ? "active" : "")">
+                                <span class="material-symbols-outlined">calendar_month</span>
+                                <span>Sessions</span>
+                            </a>
+                        </li>
+                        @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
+                        {
+                            <li class="sidebar-nav-item">
+                                <a asp-controller="Employees" asp-action="Index"
+                                   class="@(currentController == "Employees" ? "active" : "")">
+                                    <span class="material-symbols-outlined">group</span>
+                                    <span>Employees</span>
+                                </a>
+                            </li>
+                        }
+                        <li class="sidebar-nav-item">
+                            <a asp-controller="Enrollments" asp-action="Index"
+                               class="@(currentController == "Enrollments" ? "active" : "")">
+                                <span class="material-symbols-outlined">assignment_turned_in</span>
+                                <span>Enrollments</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-nav-item">
+                            <a asp-controller="Certifications" asp-action="Index"
+                               class="@(currentController == "Certifications" ? "active" : "")">
+                                <span class="material-symbols-outlined">verified</span>
+                                <span>Certifications</span>
+                            </a>
+                        </li>
+
+                        @if (User.IsInRole("Administrator"))
+                        {
+                            <li class="sidebar-nav-item mt-3">
+                                <div class="sidebar-section-heading">Admin Operations</div>
+                            </li>
+                            <li class="sidebar-nav-item">
+                                <a asp-controller="Account" asp-action="Register"
+                                   class="@(currentController == "Account" && currentAction == "Register" ? "active" : "")">
+                                    <span class="material-symbols-outlined">person_add</span>
+                                    <span>Add User</span>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
             </div>
 
-            <div class="sidebar-bottom">
+            <!-- Sidebar Bottom User Profile Card -->
+            <div class="sidebar-footer">
                 @if (User.Identity?.IsAuthenticated == true)
                 {
+                    var userEmail = User.Identity.Name ?? "User";
+                    var userInitials = userEmail.Length >= 2 ? userEmail.Substring(0, 2).ToUpper() : "U";
                     var roleLabel = User.IsInRole("Administrator") ? "Administrator"
                                     : User.IsInRole("TrainingManager") ? "Training Manager"
                                     : User.IsInRole("Instructor") ? "Instructor"
                                     : "Employee";
 
-                    <div class="sidebar-user-name">@User.Identity.Name</div>
-                    <div class="sidebar-role-badge">@roleLabel.ToUpper()</div>
-                    <div class="sidebar-bottom-links">
-                        <form asp-controller="Account" asp-action="Logout" method="post" style="display:inline;">
-                            <button type="submit">Log out</button>
+                    <div class="user-profile-card">
+                        <div class="user-avatar-circle">@userInitials</div>
+                        <div class="user-info">
+                            <div class="user-name" title="@userEmail">@userEmail</div>
+                            <span class="user-role-badge">@roleLabel</span>
+                        </div>
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline m-0">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn-icon-logout" title="Log out">
+                                <span class="material-symbols-outlined" style="font-size: 20px;">logout</span>
+                            </button>
                         </form>
                     </div>
                 }
                 else
                 {
-                    <a asp-controller="Account" asp-action="Login">Log in</a>
+                    <a asp-controller="Account" asp-action="Login" class="btn-skill-primary w-100 justify-content-center">
+                        <span class="material-symbols-outlined">login</span>
+                        <span>Log in</span>
+                    </a>
                 }
             </div>
         </aside>
 
-        <div class="main-content">
-            <div class="top-bar">
-                <div class="top-bar-label">Training &amp; Certification Operations</div>
-                <div class="avatar-circle top-bar-avatar">
-                    @(User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "?")
+        <!-- Main Workspace View -->
+        <div class="main-wrapper">
+            <!-- Top Sticky Navigation Bar -->
+            <header class="top-navbar">
+                <div class="top-navbar-search">
+                    <span class="material-symbols-outlined">search</span>
+                    <input type="text" id="globalQuickSearch" placeholder="Search courses, sessions, certifications, learners..." onkeyup="filterWorkspaceContent(this.value)" />
                 </div>
-            </div>
 
-            <div class="page-body">
+                <div class="top-navbar-actions">
+                    <!-- Notifications Trigger -->
+                    <button type="button" class="btn-icon-logout" title="Notifications">
+                        <span class="material-symbols-outlined" style="font-size: 22px; color: var(--on-surface-variant);">notifications</span>
+                    </button>
+
+                    <!-- Quick Action Trigger with Dropdown -->
+                    <div class="position-relative">
+                        <button type="button" class="btn-skill-primary" id="btnQuickAction" onclick="toggleQuickActionMenu()">
+                            <span class="material-symbols-outlined" style="font-size: 18px;">add</span>
+                            <span>Quick Action</span>
+                        </button>
+
+                        <div class="quick-action-menu" id="quickActionMenu">
+                            @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
+                            {
+                                <a asp-controller="Courses" asp-action="Create" class="quick-action-item">
+                                    <span class="material-symbols-outlined">add_circle</span>
+                                    <span>Create Course</span>
+                                </a>
+                                <a asp-controller="Sessions" asp-action="Create" class="quick-action-item">
+                                    <span class="material-symbols-outlined">calendar_add_on</span>
+                                    <span>Schedule Session</span>
+                                </a>
+                                <a asp-controller="Employees" asp-action="Create" class="quick-action-item">
+                                    <span class="material-symbols-outlined">person_add</span>
+                                    <span>Add Employee</span>
+                                </a>
+                            }
+                            <a asp-controller="Enrollments" asp-action="Create" class="quick-action-item">
+                                <span class="material-symbols-outlined">how_to_reg</span>
+                                <span>Enroll in Session</span>
+                            </a>
+                            <a asp-controller="Enrollments" asp-action="History" class="quick-action-item">
+                                <span class="material-symbols-outlined">history_edu</span>
+                                <span>Training History</span>
+                            </a>
+                            <a asp-controller="Certifications" asp-action="Index" class="quick-action-item">
+                                <span class="material-symbols-outlined">verified</span>
+                                <span>Certifications</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Body Render -->
+            <main class="page-body-container">
+                @if (TempData["Success"] != null)
+                {
+                    <div class="skill-alert skill-alert-success">
+                        <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                        <span>@TempData["Success"]</span>
+                    </div>
+                }
+                @if (TempData["Error"] != null)
+                {
+                    <div class="skill-alert skill-alert-error">
+                        <span class="material-symbols-outlined text-[20px]">error</span>
+                        <span>@TempData["Error"]</span>
+                    </div>
+                }
+
                 @RenderBody()
-            </div>
+            </main>
         </div>
 
     </div>
@@ -121,6 +227,35 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    <script>
+        function toggleQuickActionMenu() {
+            var menu = document.getElementById('quickActionMenu');
+            if (menu) {
+                menu.classList.toggle('show');
+            }
+        }
+
+        document.addEventListener('click', function(event) {
+            var btn = document.getElementById('btnQuickAction');
+            var menu = document.getElementById('quickActionMenu');
+            if (btn && menu && !btn.contains(event.target) && !menu.contains(event.target)) {
+                menu.classList.remove('show');
+            }
+        });
+
+        function filterWorkspaceContent(query) {
+            query = (query || '').toLowerCase().trim();
+            // Live-filter any active table rows on the current page
+            var tableRows = document.querySelectorAll('.skillops-table tbody tr');
+            if (tableRows.length > 0) {
+                tableRows.forEach(function(row) {
+                    var text = row.innerText.toLowerCase();
+                    row.style.display = (query === '' || text.includes(query)) ? '' : 'none';
+                });
+            }
+        }
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

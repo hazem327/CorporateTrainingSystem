@@ -3,40 +3,74 @@
     ViewData["Title"] = "Create Course";
 }
 
-<h2>Create Course</h2>
-
-<form asp-action="Create" method="post">
-    <div asp-validation-summary="All" class="text-danger"></div>
-
-    <div class="mb-3">
-        <label asp-for="Title" class="form-label"></label>
-        <input asp-for="Title" class="form-control" />
+<div class="page-header-row mb-4">
+    <div>
+        <div class="page-badge-label">
+            <span class="page-badge-dot"></span>
+            Curriculum Authoring
+        </div>
+        <h1 class="page-title">Create Training Course</h1>
+        <p class="page-subtitle">Configure course syllabus, duration, passing requirements, and certificate duration.</p>
     </div>
-
-    <div class="mb-3">
-        <label asp-for="Description" class="form-label"></label>
-        <textarea asp-for="Description" class="form-control"></textarea>
+    <div>
+        <a asp-action="Index" class="btn-skill-outline">
+            <span class="material-symbols-outlined" style="font-size: 18px;">arrow_back</span>
+            <span>Back to Courses</span>
+        </a>
     </div>
+</div>
 
-    <div class="mb-3">
-        <label asp-for="Category" class="form-label"></label>
-        <input asp-for="Category" class="form-control" />
-    </div>
+<div class="form-card-container">
+    <form asp-action="Create" method="post">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="All" class="text-danger mb-3"></div>
 
-    <div class="mb-3">
-        <label asp-for="DurationHours" class="form-label"></label>
-        <input asp-for="DurationHours" class="form-control" />
-    </div>
+        <div class="form-group-custom">
+            <label asp-for="Title">Course Title *</label>
+            <input asp-for="Title" class="form-control-custom" placeholder="e.g., Hazardous Materials Handling (HAZMAT L2)" required />
+            <span asp-validation-for="Title" class="text-danger small"></span>
+        </div>
 
-    <div class="mb-3">
-        <label asp-for="PassingScore" class="form-label">Passing Score (0-100)</label>
-        <input asp-for="PassingScore" class="form-control" />
-    </div>
+        <div class="form-group-custom">
+            <label asp-for="Description">Course Description</label>
+            <textarea asp-for="Description" class="form-control-custom" rows="3" placeholder="Provide syllabus overview, objectives, and target audience..."></textarea>
+            <span asp-validation-for="Description" class="text-danger small"></span>
+        </div>
 
-    <div class="mb-3">
-        <label asp-for="CertificateValidityMonths" class="form-label"></label>
-        <input asp-for="CertificateValidityMonths" class="form-control" />
-    </div>
+        <div class="row">
+            <div class="col-md-6 form-group-custom">
+                <label asp-for="Category">Category *</label>
+                <input asp-for="Category" class="form-control-custom" placeholder="e.g., Health & Safety, Operations, IT" required />
+                <span asp-validation-for="Category" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6 form-group-custom">
+                <label asp-for="DurationHours">Duration (Hours) *</label>
+                <input asp-for="DurationHours" type="number" min="1" class="form-control-custom" placeholder="e.g., 16" required />
+                <span asp-validation-for="DurationHours" class="text-danger small"></span>
+            </div>
+        </div>
 
-    <button type="submit" class="btn btn-primary">Create</button>
-</form>
+        <div class="row">
+            <div class="col-md-6 form-group-custom">
+                <label asp-for="PassingScore">Passing Score (0 - 100%) *</label>
+                <input asp-for="PassingScore" type="number" min="0" max="100" class="form-control-custom" placeholder="e.g., 75" required />
+                <div class="form-hint">Minimum assessment grade required for certificate issuance.</div>
+                <span asp-validation-for="PassingScore" class="text-danger small"></span>
+            </div>
+            <div class="col-md-6 form-group-custom">
+                <label asp-for="CertificateValidityMonths">Certificate Validity (Months) *</label>
+                <input asp-for="CertificateValidityMonths" type="number" min="0" class="form-control-custom" placeholder="e.g., 24 (2 years)" required />
+                <div class="form-hint">Duration before recertification is required.</div>
+                <span asp-validation-for="CertificateValidityMonths" class="text-danger small"></span>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-end gap-2 mt-4 pt-3 border-top">
+            <a asp-action="Index" class="btn-skill-outline">Cancel</a>
+            <button type="submit" class="btn-skill-primary">
+                <span class="material-symbols-outlined" style="font-size: 18px;">save</span>
+                <span>Save Course</span>
+            </button>
+        </div>
+    </form>
+</div>

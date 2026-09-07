@@ -1,135 +1,249 @@
 @model List<CorporateTrainingSystem.Application.Features.Enrollments.ListEnrollments.EnrollmentListItem>
 @{
-    ViewData["Title"] = "Enrollments";
+    ViewData["Title"] = "Enrollment Operations";
+    var totalEnrollments = Model.Count;
+    var activeEnrollments = Model.Count(e => e.Status == "Active");
+    var completedEnrollments = Model.Count(e => e.Status == "Completed");
+    var cancelledEnrollments = Model.Count(e => e.Status == "Cancelled");
 }
 
-<h2>Enrollments</h2>
-
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
-}
-
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="page-header-row">
     <div>
-        <a asp-action="Create" class="btn btn-primary">
-            @(User.IsInRole("Administrator") || User.IsInRole("TrainingManager") ? "Enroll Employee" : "Enroll in Session")
+        <div class="page-badge-label">
+            <span class="page-badge-dot"></span>
+            Learner Registrations
+        </div>
+        <h1 class="page-title">Enrollment Operations</h1>
+        <p class="page-subtitle">Track cohort rosters, record attendance &amp; scores, issue certificates, and manage registrations.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a asp-action="Create" class="btn-skill-primary">
+            <span class="material-symbols-outlined">how_to_reg</span>
+            <span>@(User.IsInRole("Administrator") || User.IsInRole("TrainingManager") ? "Enroll Employee" : "Enroll in Session")</span>
         </a>
-        <a asp-action="History" class="btn btn-outline-secondary ms-2">
-            @(User.IsInRole("Administrator") || User.IsInRole("TrainingManager") ? "Training History" : "My Training History")
+        <a asp-action="History" class="btn-skill-outline">
+            <span class="material-symbols-outlined">history_edu</span>
+            <span>@(User.IsInRole("Administrator") || User.IsInRole("TrainingManager") ? "Training History" : "My Training History")</span>
         </a>
     </div>
 </div>
 
+<!-- KPI Metrics Grid -->
+<div class="metric-grid">
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Active Learners</span>
+                <div class="metric-value" style="color: var(--tertiary);">@activeEnrollments</div>
+            </div>
+            <div class="metric-icon-box green">
+                <span class="material-symbols-outlined text-[24px]">assignment_turned_in</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <span>Enrolled in open cohorts</span>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Completed Trainings</span>
+                <div class="metric-value" style="color: var(--primary-container);">@completedEnrollments</div>
+            </div>
+            <div class="metric-icon-box purple">
+                <span class="material-symbols-outlined text-[24px]">verified</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <span>Graded &amp; certification ready</span>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Cancelled Registrations</span>
+                <div class="metric-value">@cancelledEnrollments</div>
+            </div>
+            <div class="metric-icon-box orange">
+                <span class="material-symbols-outlined text-[24px]">cancel</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <span>Preserved historical records (BR-07)</span>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Total Enrollments</span>
+                <div class="metric-value">@totalEnrollments</div>
+            </div>
+            <div class="metric-icon-box purple">
+                <span class="material-symbols-outlined text-[24px]">school</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <span>All-time corporate registrations</span>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Smart Filter Card -->
 @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
 {
-    <div class="card mb-4">
-        <div class="card-body">
-            <form method="get" asp-action="Index" class="row g-3 align-items-end">
-                <div class="col-md-4">
-                    <label class="form-label">Filter by Employee</label>
-                    <select name="employeeId" asp-items="ViewBag.FilterEmployees" class="form-select">
-                        <option value="">-- All Employees --</option>
-                    </select>
-                </div>
-                <div class="col-md-5">
-                    <label class="form-label">Filter by Session</label>
-                    <select name="sessionId" asp-items="ViewBag.FilterSessions" class="form-select">
-                        <option value="">-- All Sessions --</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-secondary">Filter</button>
-                    <a asp-action="Index" class="btn btn-outline-secondary">Reset</a>
-                </div>
-            </form>
-        </div>
+    <div class="filter-card">
+        <form method="get" asp-action="Index" class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label font-weight-bold" style="font-size: 12px; text-transform: uppercase; color: var(--outline);">Filter by Employee</label>
+                <select name="employeeId" asp-items="ViewBag.FilterEmployees" class="form-control-custom">
+                    <option value="">-- All Employees --</option>
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label font-weight-bold" style="font-size: 12px; text-transform: uppercase; color: var(--outline);">Filter by Session</label>
+                <select name="sessionId" asp-items="ViewBag.FilterSessions" class="form-control-custom">
+                    <option value="">-- All Sessions --</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn-skill-primary flex-fill justify-content-center">Filter</button>
+                <a asp-action="Index" class="btn-skill-outline" title="Reset">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">restart_alt</span>
+                </a>
+            </div>
+        </form>
     </div>
 }
 
-@if (Model == null || !Model.Any())
-{
-    <div class="alert alert-info">
-        No enrollments found.
-    </div>
-}
-else
-{
-    <table class="table table-striped align-middle">
-        <thead>
-            <tr>
-                <th>Employee</th>
-                <th>Department</th>
-                <th>Course</th>
-                <th>Session Dates</th>
-                <th>Location</th>
-                <th>Enrolled On</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
+<!-- Enrollments Table Card -->
+<div class="table-container-card">
+    <div class="table-responsive">
+        <table class="skillops-table" id="enrollmentsTable">
+            <thead>
                 <tr>
-                    <td>
-                        <strong>@item.EmployeeName</strong>
-                        <div class="text-muted small">@item.EmployeeNumber</div>
-                    </td>
-                    <td>@item.DepartmentName</td>
-                    <td>@item.CourseTitle</td>
-                    <td>
-                        @item.StartDate.ToString("yyyy-MM-dd") to @item.EndDate.ToString("yyyy-MM-dd")
-                    </td>
-                    <td>@item.Location</td>
-                    <td>@item.EnrolledAt.ToString("yyyy-MM-dd HH:mm")</td>
-                    <td>
-                        @if (item.Status == "Active")
-                        {
-                            <span class="badge bg-success">Active</span>
-                        }
-                        else if (item.Status == "Cancelled")
-                        {
-                            <span class="badge bg-secondary">Cancelled</span>
-                        }
-                        else if (item.Status == "Completed")
-                        {
-                            <span class="badge bg-primary">Completed</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-info">@item.Status</span>
-                        }
-    @if (item.Status == "Active")
-{
-    <a asp-controller="Assessments" asp-action="Record" asp-route-enrollmentId="@item.Id" class="btn btn-sm btn-outline-primary">Record Result</a>
-}
-@if (item.Status == "Completed")
-{
-    <form asp-controller="Certifications" asp-action="Issue" asp-route-enrollmentId="@item.Id" method="post" class="d-inline">
-        <button type="submit" class="btn btn-sm btn-outline-success">Issue Certificate</button>
-    </form>
-}
-                    </td>
-                    <td>
-                        <div class="d-flex gap-1">
-                            @if (item.CanCancel)
-                            {
-                                <form asp-action="Cancel" method="post" onsubmit="return confirm('Are you sure you want to cancel this enrollment?');" class="d-inline">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="id" value="@item.Id" />
-                                    <button type="submit" class="btn btn-outline-danger btn-sm">Cancel</button>
-                                </form>
-                            }
-                            <a asp-action="History" asp-route-employeeId="@item.EmployeeId" class="btn btn-outline-primary btn-sm">History</a>
-                        </div>
-                    </td>
+                    <th>Learner</th>
+                    <th>Department</th>
+                    <th>Course &amp; Cohort</th>
+                    <th>Schedule</th>
+                    <th>Status &amp; Flow</th>
+                    <th style="text-align: right;">Actions</th>
                 </tr>
-            }
-        </tbody>
-    </table>
-}
+            </thead>
+            <tbody>
+                @if (Model == null || !Model.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">
+                            <span class="material-symbols-outlined" style="font-size: 40px; color: var(--outline);">assignment_late</span>
+                            <p class="mt-2 mb-0">No enrollments match the selected criteria.</p>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        var initials = string.Join("", item.EmployeeName.Split(' ')
+                            .Where(p => p.Length > 0)
+                            .Select(p => p[0]))
+                            .ToUpper();
+                        if (initials.Length > 2) { initials = initials.Substring(0, 2); }
+                        if (string.IsNullOrEmpty(initials)) { initials = "EM"; }
+
+                        <tr data-search="@item.EmployeeName.ToLower() @item.CourseTitle.ToLower() @item.DepartmentName.ToLower() @item.EmployeeNumber.ToLower()">
+                            <td>
+                                <div class="employee-profile-cell">
+                                    <div class="avatar-badge">@initials</div>
+                                    <div>
+                                        <div class="table-cell-title">@item.EmployeeName</div>
+                                        <div class="table-cell-sub">#@item.EmployeeNumber</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="status-badge neutral">
+                                    @item.DepartmentName
+                                </span>
+                            </td>
+                            <td>
+                                <div class="table-cell-title">@item.CourseTitle</div>
+                                <div class="table-cell-sub">Enrolled: @item.EnrolledAt.ToString("yyyy-MM-dd")</div>
+                            </td>
+                            <td>
+                                <div class="table-cell-title">@item.StartDate.ToString("MMM d") - @item.EndDate.ToString("MMM d, yyyy")</div>
+                                <div class="table-cell-sub">@item.Location</div>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column gap-1">
+                                    @if (item.Status == "Active")
+                                    {
+                                        <span class="status-badge active">
+                                            <span class="status-dot"></span>
+                                            Active
+                                        </span>
+                                        @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager") || User.IsInRole("Instructor"))
+                                        {
+                                            <a asp-controller="Assessments" asp-action="Record" asp-route-enrollmentId="@item.Id" class="btn-skill-subtle mt-1">
+                                                <span class="material-symbols-outlined" style="font-size: 14px;">edit_note</span>
+                                                <span>Record Result</span>
+                                            </a>
+                                        }
+                                    }
+                                    else if (item.Status == "Completed")
+                                    {
+                                        <span class="status-badge completed">
+                                            <span class="status-dot"></span>
+                                            Completed
+                                        </span>
+                                        @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
+                                        {
+                                            <form asp-controller="Certifications" asp-action="Issue" asp-route-enrollmentId="@item.Id" method="post" class="d-inline mt-1">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn-skill-primary btn-skill-sm w-100 justify-content-center">
+                                                    <span class="material-symbols-outlined" style="font-size: 14px;">workspace_premium</span>
+                                                    <span>Issue Certificate</span>
+                                                </button>
+                                            </form>
+                                        }
+                                    }
+                                    else if (item.Status == "Cancelled")
+                                    {
+                                        <span class="status-badge cancelled">
+                                            <span class="status-dot"></span>
+                                            Cancelled
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge neutral">@item.Status</span>
+                                    }
+                                </div>
+                            </td>
+                            <td style="text-align: right;">
+                                <div class="d-inline-flex gap-2">
+                                    @if (item.CanCancel)
+                                    {
+                                        <form asp-action="Cancel" method="post" onsubmit="return confirm('Are you sure you want to cancel this enrollment?');" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <button type="submit" class="btn-skill-danger">
+                                                <span>Cancel</span>
+                                            </button>
+                                        </form>
+                                    }
+                                    <a asp-action="History" asp-route-employeeId="@item.EmployeeId" class="btn-skill-outline btn-skill-sm">
+                                        <span class="material-symbols-outlined" style="font-size: 15px;">history</span>
+                                        <span>History</span>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

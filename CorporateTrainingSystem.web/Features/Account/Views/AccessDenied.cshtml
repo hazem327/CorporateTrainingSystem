@@ -1,5 +1,26 @@
 @{
     ViewData["Title"] = "Access Denied";
 }
-<h2>Access Denied</h2>
-<p>You do not have permission to view this page.</p>
+
+<div class="row justify-content-center pt-5">
+    <div class="col-md-6 text-center">
+        <div class="form-card-container">
+            <div class="metric-icon-box red mx-auto mb-3" style="width: 64px; height: 64px;">
+                <span class="material-symbols-outlined" style="font-size: 36px;">lock</span>
+            </div>
+            <h1 class="page-title" style="font-size: 24px;">Access Restricted</h1>
+            <p class="page-subtitle mt-2 mb-4">
+                You do not have the required role permissions to perform this operation or view this resource (BR-08).
+            </p>
+            <div class="d-flex justify-content-center gap-3">
+                <a asp-controller="Home" asp-action="Index" class="btn-skill-primary">
+                    <span class="material-symbols-outlined" style="font-size: 18px;">home</span>
+                    <span>Return to Dashboard</span>
+                </a>
+                <a asp-controller="Enrollments" asp-action="Index" class="btn-skill-outline">
+                    <span>View Enrollments</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,6 +1,200 @@
 @{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Executive Overview";
 }
 
-<h1>Corporate Training System</h1>
-<p>Departments in DB: @ViewBag.DepartmentCount</p>
+<div class="page-header-row">
+    <div>
+        <div class="page-badge-label">
+            <span class="page-badge-dot"></span>
+            SkillOps Executive Dashboard
+        </div>
+        <h1 class="page-title">Corporate Training &amp; Certification</h1>
+        <p class="page-subtitle">Real-time overview of workforce skill development, upcoming sessions, and compliance credentials.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a asp-controller="Enrollments" asp-action="Create" class="btn-skill-primary">
+            <span class="material-symbols-outlined">how_to_reg</span>
+            <span>Enroll in Session</span>
+        </a>
+    </div>
+</div>
+
+<!-- Primary Metric Grid -->
+<div class="metric-grid">
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Course Catalog</span>
+                <div class="metric-value">@ViewBag.CourseCount</div>
+            </div>
+            <div class="metric-icon-box purple">
+                <span class="material-symbols-outlined text-[24px]">menu_book</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <a asp-controller="Courses" asp-action="Index" class="btn-skill-subtle btn-skill-sm">
+                <span>View Courses</span>
+                <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Open Sessions</span>
+                <div class="metric-value" style="color: var(--tertiary);">@ViewBag.ScheduledSessionCount</div>
+            </div>
+            <div class="metric-icon-box green">
+                <span class="material-symbols-outlined text-[24px]">calendar_month</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <a asp-controller="Sessions" asp-action="Index" class="btn-skill-subtle btn-skill-sm">
+                <span>View Sessions</span>
+                <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Active Learners</span>
+                <div class="metric-value" style="color: var(--primary-container);">@ViewBag.ActiveEmployeeCount</div>
+            </div>
+            <div class="metric-icon-box purple">
+                <span class="material-symbols-outlined text-[24px]">group</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
+            {
+                <a asp-controller="Employees" asp-action="Index" class="btn-skill-subtle btn-skill-sm">
+                    <span>Directory</span>
+                    <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
+                </a>
+            }
+            else
+            {
+                <span>Across @ViewBag.DepartmentCount departments</span>
+            }
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Credentials Issued</span>
+                <div class="metric-value" style="color: var(--primary);">@ViewBag.CertificationCount</div>
+            </div>
+            <div class="metric-icon-box orange">
+                <span class="material-symbols-outlined text-[24px]">verified</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <a asp-controller="Certifications" asp-action="Index" class="btn-skill-subtle btn-skill-sm">
+                <span>Certifications</span>
+                <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Operational Modules Hub -->
+<div class="row g-4 mt-1">
+    <div class="col-md-6 col-lg-4">
+        <div class="metric-card h-100">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="metric-icon-box purple">
+                    <span class="material-symbols-outlined text-[24px]">assignment_turned_in</span>
+                </div>
+                <div>
+                    <h3 class="headline-font" style="font-size: 17px;">Enrollment Operations</h3>
+                    <span class="status-subtext">@ViewBag.EnrollmentCount total registrations</span>
+                </div>
+            </div>
+            <p style="color: var(--on-surface-variant); font-size: 13.5px; margin-bottom: 20px;">
+                Manage participant rosters, enforce capacity limits (BR-02), and record attendance and exam outcomes.
+            </p>
+            <div class="mt-auto d-flex gap-2">
+                <a asp-controller="Enrollments" asp-action="Index" class="btn-skill-primary btn-skill-sm flex-fill justify-content-center">
+                    <span>Manage Enrollments</span>
+                </a>
+                <a asp-controller="Enrollments" asp-action="History" class="btn-skill-outline btn-skill-sm">
+                    <span>History</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <div class="metric-card h-100">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="metric-icon-box green">
+                    <span class="material-symbols-outlined text-[24px]">verified_user</span>
+                </div>
+                <div>
+                    <h3 class="headline-font" style="font-size: 17px;">Certification Governance</h3>
+                    <span class="status-subtext">Automated validity calculation</span>
+                </div>
+            </div>
+            <p style="color: var(--on-surface-variant); font-size: 13.5px; margin-bottom: 20px;">
+                Issue unique credential IDs upon verified passing score, track 30-day renewal windows, and monitor compliance.
+            </p>
+            <div class="mt-auto d-flex gap-2">
+                <a asp-controller="Certifications" asp-action="Index" class="btn-skill-primary btn-skill-sm flex-fill justify-content-center">
+                    <span>Track Credentials</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <div class="metric-card h-100">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="metric-icon-box orange">
+                    <span class="material-symbols-outlined text-[24px]">calendar_month</span>
+                </div>
+                <div>
+                    <h3 class="headline-font" style="font-size: 17px;">Session Logistics</h3>
+                    <span class="status-subtext">@ViewBag.ScheduledSessionCount active cohorts</span>
+                </div>
+            </div>
+            <p style="color: var(--on-surface-variant); font-size: 13.5px; margin-bottom: 20px;">
+                Schedule instructor-led training, track capacity saturation, and coordinate room/online deliveries.
+            </p>
+            <div class="mt-auto d-flex gap-2">
+                <a asp-controller="Sessions" asp-action="Index" class="btn-skill-primary btn-skill-sm flex-fill justify-content-center">
+                    <span>View Calendar</span>
+                </a>
+                @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
+                {
+                    <a asp-controller="Sessions" asp-action="Create" class="btn-skill-outline btn-skill-sm">
+                        <span>+ Schedule</span>
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Compliance Banner -->
+<div class="promo-banner">
+    <div class="d-flex align-items-center gap-3">
+        <div class="promo-icon-wrap">
+            <span class="material-symbols-outlined" style="font-size: 28px;">verified</span>
+        </div>
+        <div>
+            <h3 class="headline-font" style="font-size: 18px; color: white;">Corporate Compliance Engine Active</h3>
+            <p style="margin: 2px 0 0 0; font-size: 13.5px; opacity: 0.9;">
+                All business rules (BR-01 through BR-08) are enforced at the application and domain levels.
+            </p>
+        </div>
+    </div>
+    <div class="d-flex align-items-center gap-2 shrink-0">
+        <a asp-controller="Courses" asp-action="Index" class="btn-skill-outline" style="background-color: white; border: none; color: var(--primary) !important;">
+            <span>Browse Catalog</span>
+        </a>
+    </div>
+</div>

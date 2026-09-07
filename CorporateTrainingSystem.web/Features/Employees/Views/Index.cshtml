@@ -1,42 +1,202 @@
 @model List<CorporateTrainingSystem.Application.Features.Employees.ListEmployees.EmployeeListItem>
 @{
-    ViewData["Title"] = "Employees";
+    ViewData["Title"] = "Employee Directory";
+    var totalEmployees = Model.Count;
+    var activeEmployees = Model.Count(e => e.IsActive);
 }
 
-<h2>Employees</h2>
-
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
-
-@if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
-{
-    <a asp-action="Create" class="btn btn-primary mb-3">Add Employee</a>
-}
-
-<table class="table">
-    <thead>
-        <tr>
-            <th>Emp #</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Job Title</th>
-            <th>Department</th>
-            <th>Active</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var emp in Model)
+<div class="page-header-row">
+    <div>
+        <div class="page-badge-label">
+            <span class="page-badge-dot"></span>
+            Workforce Directory
+        </div>
+        <h1 class="page-title">Employees &amp; Learners</h1>
+        <p class="page-subtitle">Manage employee records, department assignments, and access full training histories.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
         {
-            <tr>
-                <td>@emp.EmployeeNumber</td>
-                <td>@emp.FullName</td>
-                <td>@emp.Email</td>
-                <td>@emp.JobTitle</td>
-                <td>@emp.DepartmentName</td>
-                <td>@(emp.IsActive ? "Yes" : "No")</td>
-            </tr>
+            <a asp-action="Create" class="btn-skill-primary">
+                <span class="material-symbols-outlined">person_add</span>
+                <span>Add Employee</span>
+            </a>
         }
-    </tbody>
-</table>
+    </div>
+</div>
+
+<!-- KPI Metrics Grid -->
+<div class="metric-grid">
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Total Staff</span>
+                <div class="metric-value">@totalEmployees</div>
+            </div>
+            <div class="metric-icon-box purple">
+                <span class="material-symbols-outlined text-[24px]">group</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <span>Corporate employees in system</span>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Active Learners</span>
+                <div class="metric-value" style="color: var(--tertiary);">@activeEmployees</div>
+            </div>
+            <div class="metric-icon-box green">
+                <span class="material-symbols-outlined text-[24px]">verified_user</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <span>Eligible for enrollment</span>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Enrollments</span>
+                <div class="metric-value">Operations</div>
+            </div>
+            <div class="metric-icon-box orange">
+                <span class="material-symbols-outlined text-[24px]">assignment_turned_in</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <a asp-controller="Enrollments" asp-action="Index" class="btn-skill-subtle btn-skill-sm">
+                <span>View All Enrollments</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">User Accounts</span>
+                <div class="metric-value">Identity</div>
+            </div>
+            <div class="metric-icon-box purple">
+                <span class="material-symbols-outlined text-[24px]">admin_panel_settings</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            @if (User.IsInRole("Administrator"))
+            {
+                <a asp-controller="Account" asp-action="Register" class="btn-skill-subtle btn-skill-sm">
+                    <span>Create User Login</span>
+                </a>
+            }
+            else
+            {
+                <span>Role-based access enabled</span>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Employees Table Card -->
+<div class="table-container-card">
+    <div class="table-responsive">
+        <table class="skillops-table" id="employeesTable">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Employee #</th>
+                    <th>Email Address</th>
+                    <th>Job Title</th>
+                    <th>Department</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model == null || !Model.Any())
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <span class="material-symbols-outlined" style="font-size: 40px; color: var(--outline);">group</span>
+                            <p class="mt-2 mb-0">No employee profiles created yet.</p>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var emp in Model)
+                    {
+                        var initials = string.Join("", emp.FullName.Split(' ')
+                            .Where(p => p.Length > 0)
+                            .Select(p => p[0]))
+                            .ToUpper();
+                        if (initials.Length > 2) { initials = initials.Substring(0, 2); }
+                        if (string.IsNullOrEmpty(initials)) { initials = "EM"; }
+
+                        <tr data-search="@emp.FullName.ToLower() @emp.Email.ToLower() @emp.DepartmentName.ToLower() @emp.JobTitle.ToLower() @emp.EmployeeNumber.ToLower()">
+                            <td>
+                                <div class="employee-profile-cell">
+                                    <div class="avatar-badge">@initials</div>
+                                    <div>
+                                        <div class="table-cell-title">@emp.FullName</div>
+                                        <div class="table-cell-sub">Joined @emp.HireDate.ToString("yyyy-MM-dd")</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="table-cell-title" style="font-family: monospace; color: var(--primary-container);">
+                                    @emp.EmployeeNumber
+                                </span>
+                            </td>
+                            <td>
+                                <span class="table-cell-title">@emp.Email</span>
+                            </td>
+                            <td>
+                                <span class="table-cell-title">@emp.JobTitle</span>
+                            </td>
+                            <td>
+                                <span class="status-badge primary">
+                                    <span class="status-dot"></span>
+                                    @emp.DepartmentName
+                                </span>
+                            </td>
+                            <td>
+                                @if (emp.IsActive)
+                                {
+                                    <span class="status-badge valid">
+                                        <span class="status-dot"></span>
+                                        Active
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge neutral">
+                                        <span class="status-dot"></span>
+                                        Inactive
+                                    </span>
+                                }
+                            </td>
+                            <td style="text-align: right;">
+                                <div class="d-inline-flex gap-2">
+                                    <a asp-controller="Enrollments" asp-action="History" asp-route-employeeId="@emp.Id" class="btn-skill-subtle">
+                                        <span class="material-symbols-outlined" style="font-size: 15px;">history</span>
+                                        <span>History</span>
+                                    </a>
+                                    @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
+                                    {
+                                        <a asp-controller="Enrollments" asp-action="Index" asp-route-employeeId="@emp.Id" class="btn-skill-outline btn-skill-sm">
+                                            <span class="material-symbols-outlined" style="font-size: 15px;">visibility</span>
+                                            <span>Enrollments</span>
+                                        </a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

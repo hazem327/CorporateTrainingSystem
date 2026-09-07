@@ -7,6 +7,7 @@ namespace CorporateTrainingSystem.Application.Features.Employees.ListEmployees
         public string FullName { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
         public string JobTitle { get; set; } = string.Empty;
+        public DateTime HireDate { get; set; }
         public string DepartmentName { get; set; } = string.Empty;
         public bool IsActive { get; set; }
     }

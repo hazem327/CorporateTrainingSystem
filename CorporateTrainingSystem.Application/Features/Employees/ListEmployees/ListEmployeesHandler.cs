@@ -22,6 +22,7 @@ namespace CorporateTrainingSystem.Application.Features.Employees.ListEmployees
                     FullName = e.FullName,
                     Email = e.Email,
                     JobTitle = e.JobTitle,
+                    HireDate = e.HireDate,
                     DepartmentName = e.Department.Name,
                     IsActive = e.IsActive
                 })

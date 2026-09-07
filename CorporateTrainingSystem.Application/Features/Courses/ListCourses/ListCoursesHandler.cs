@@ -21,6 +21,8 @@ namespace CorporateTrainingSystem.Application.Features.Courses.ListCourses
                     Title = c.Title,
                     Category = c.Category,
                     DurationHours = c.DurationHours,
+                    PassingScore = c.PassingScore,
+                    CertificateValidityMonths = c.CertificateValidityMonths,
                     IsActive = c.IsActive
                 })
                 .ToList();
