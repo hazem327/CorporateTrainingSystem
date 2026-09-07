@@ -1,9 +1,19 @@
 @model List<CorporateTrainingSystem.Application.Features.Certifications.ListCertifications.CertificationListItem>
 @{
     ViewData["Title"] = "Certifications";
+
+    var total = Model.Count;
+    var activeCount = Model.Count(c => c.Status == "Valid");
+    var expiringCount = Model.Count(c => c.Status == "ExpiringSoon");
+    var expiredCount = Model.Count(c => c.Status == "Expired");
 }
 
-<h2>Certifications</h2>
+<div class="page-header-row">
+    <div>
+        <h1 class="page-title">Certifications &amp; Credentials</h1>
+        <p class="page-subtitle">Track employee credentials and certificate renewal timelines.</p>
+    </div>
+</div>
 
 @if (TempData["Success"] != null)
 {
@@ -14,41 +24,111 @@
     <div class="alert alert-danger">@TempData["Error"]</div>
 }
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Employee</th>
-            <th>Course</th>
-            <th>Certificate #</th>
-            <th>Issued</th>
-            <th>Expires</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var cert in Model)
-        {
+<div class="stat-row">
+    <div class="stat-card">
+        <div class="stat-label">Total Certificates</div>
+        <div class="stat-value">@total</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Active</div>
+        <div class="stat-value">@activeCount</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Expiring Soon</div>
+        <div class="stat-value">@expiringCount</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Expired</div>
+        <div class="stat-value">@expiredCount</div>
+    </div>
+</div>
+
+<div class="pill-row">
+    <a href="#" class="pill active" data-filter="all">All (@total)</a>
+    <a href="#" class="pill" data-filter="Valid">Active (@activeCount)</a>
+    <a href="#" class="pill" data-filter="ExpiringSoon">Expiring Soon (@expiringCount)</a>
+    <a href="#" class="pill" data-filter="Expired">Expired (@expiredCount)</a>
+</div>
+
+<div class="op-table-wrap">
+    <table class="op-table" id="certTable">
+        <thead>
             <tr>
-                <td>@cert.EmployeeName</td>
-                <td>@cert.CourseTitle</td>
-                <td>@cert.CertificateNumber</td>
-                <td>@cert.IssueDate.ToString("yyyy-MM-dd")</td>
-                <td>@cert.ExpiryDate.ToString("yyyy-MM-dd")</td>
-                <td>
-                    @if (cert.Status == "Valid")
-                    {
-                        <span class="badge bg-success">Valid</span>
-                    }
-                    else if (cert.Status == "ExpiringSoon")
-                    {
-                        <span class="badge bg-warning text-dark">Expiring Soon</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-danger">Expired</span>
-                    }
-                </td>
+                <th>Employee</th>
+                <th>Certification &amp; Standard</th>
+                <th>Issue Date</th>
+                <th>Expiry Date</th>
+                <th>Status</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var cert in Model)
+            {
+                var initials = string.Join("", cert.EmployeeName.Split(' ')
+                    .Where(p => p.Length > 0)
+                    .Select(p => p[0]))
+                    .ToUpper();
+                if (initials.Length > 2) { initials = initials.Substring(0, 2); }
+
+                var daysLeft = (cert.ExpiryDate.Date - DateTime.Today).Days;
+
+                <tr data-status="@cert.Status">
+                    <td>
+                        <div class="employee-cell">
+                            <div class="avatar-circle">@initials</div>
+                            <div>
+                                <div class="primary-text">@cert.EmployeeName</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="primary-text">@cert.CourseTitle</div>
+                        <div class="muted-text">@cert.CertificateNumber</div>
+                    </td>
+                    <td>@cert.IssueDate.ToString("MMM d, yyyy")</td>
+                    <td>
+                        <div class="primary-text">@cert.ExpiryDate.ToString("MMM d, yyyy")</div>
+                    </td>
+                    <td class="status-cell">
+                        @if (cert.Status == "Valid")
+                        {
+                            <span class="badge-status badge-good">Active</span>
+                            <span class="status-sub">@daysLeft days remaining</span>
+                        }
+                        else if (cert.Status == "ExpiringSoon")
+                        {
+                            <span class="badge-status badge-warn">Expiring Soon</span>
+                            <span class="status-sub">in @daysLeft days</span>
+                        }
+                        else
+                        {
+                            <span class="badge-status badge-bad">Expired</span>
+                            <span class="status-sub overdue">@(-daysLeft) days overdue</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.pill').forEach(function (pill) {
+            pill.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+
+                var filter = this.getAttribute('data-filter');
+                document.querySelectorAll('#certTable tbody tr').forEach(function (row) {
+                    if (filter === 'all' || row.getAttribute('data-status') === filter) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+        });
+    </script>
+}

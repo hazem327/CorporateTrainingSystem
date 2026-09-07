@@ -1,82 +1,123 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using CorporateTrainingSystem.Infrastructure.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - CorporateTrainingSystem</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - Corporate Training System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/CorporateTrainingSystem.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">CorporateTrainingSystem</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+    <div class="app-shell">
+
+        <aside class="sidebar">
+            <div>
+                <div class="sidebar-top">
+                    <div class="sidebar-brand-row">
+                        <div class="sidebar-logo-mark">CT</div>
+                        <div>
+                            <div class="sidebar-brand">Corporate Training</div>
+                            <div class="sidebar-subbrand">Certification System</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-section-label">Operations</div>
+
+                @{
+                    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+                }
+
+                <ul class="sidebar-nav">
+                    <li>
+                        <a asp-controller="Courses" asp-action="Index"
+                           class="@(currentController == "Courses" ? "active" : "")">
+                            Courses
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Sessions" asp-action="Index"
+                           class="@(currentController == "Sessions" ? "active" : "")">
+                            Sessions
+                        </a>
+                    </li>
+                    @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
+                    {
+                        <li>
+                            <a asp-controller="Employees" asp-action="Index"
+                               class="@(currentController == "Employees" ? "active" : "")">
+                                Employees
+                            </a>
                         </li>
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Courses" asp-action="Index">Courses</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Sessions" asp-action="Index">Sessions</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Enrollments" asp-action="Index">Enrollments</a>
-                            </li>
-                            @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link text-dark" asp-area="" asp-controller="Employees" asp-action="Index">Employees</a>
-                                </li>
-                            }
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Enrollments" asp-action="History">Training History</a>
-                            </li>
-                        }
-                    </ul>
-                    <ul class="navbar-nav ms-auto">
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
-                            <li class="nav-item">
-                                <span class="nav-link">Hello, @User.Identity.Name</span>
-                            </li>
-                            <li class="nav-item">
-            <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                <button type="submit" class="btn btn-link nav-link">Logout</button>
-            </form>
-        </li>
-    }
-    else
-    {
-        <li class="nav-item">
-            <a class="nav-link" asp-controller="Account" asp-action="Login">Login</a>
-        </li>
-    }
-</ul>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+                    }
+                    <li>
+                        <a asp-controller="Enrollments" asp-action="Index"
+                           class="@(currentController == "Enrollments" ? "active" : "")">
+                            Enrollments
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Certifications" asp-action="Index"
+                           class="@(currentController == "Certifications" ? "active" : "")">
+                            Certifications
+                        </a>
+                    </li>
+                    @if (User.IsInRole("Administrator"))
+                    {
+                        <li>
+                            <a asp-controller="Account" asp-action="Register"
+                               class="@(currentController == "Account" ? "active" : "")">
+                                Add User
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+
+            <div class="sidebar-bottom">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    var roleLabel = User.IsInRole("Administrator") ? "Administrator"
+                                    : User.IsInRole("TrainingManager") ? "Training Manager"
+                                    : User.IsInRole("Instructor") ? "Instructor"
+                                    : "Employee";
+
+                    <div class="sidebar-user-name">@User.Identity.Name</div>
+                    <div class="sidebar-role-badge">@roleLabel.ToUpper()</div>
+                    <div class="sidebar-bottom-links">
+                        <form asp-controller="Account" asp-action="Logout" method="post" style="display:inline;">
+                            <button type="submit">Log out</button>
+                        </form>
+                    </div>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login">Log in</a>
+                }
+            </div>
+        </aside>
+
+        <div class="main-content">
+            <div class="top-bar">
+                <div class="top-bar-label">Training &amp; Certification Operations</div>
+                <div class="avatar-circle top-bar-avatar">
+                    @(User.Identity?.Name?.Substring(0, 1).ToUpper() ?? "?")
+                </div>
+            </div>
+
+            <div class="page-body">
+                @RenderBody()
+            </div>
+        </div>
+
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - CorporateTrainingSystem - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
