@@ -285,6 +285,9 @@ On startup, `DbSeeder.cs` ensures default roles and an administrator account exi
 | Role | Email | Password |
 |---|---|---|
 | **Administrator** | `admin@corporatetraining.local` | `Admin@12345` |
+| **Training Manager** | `manager@corporatetraining.local` | `Manager@12345` |
+| **Instructor** | `instructor@corporatetraining.local` | `Instructor@12345` |
+| **Employee** | `employee@corporatetraining.local` | `Employee@12345` |
 
 > [!TIP]
 > Log in as Administrator to create departments, add employees, create additional user accounts for instructors/managers/employees via **Add User**, and schedule courses.
