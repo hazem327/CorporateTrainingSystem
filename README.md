@@ -82,6 +82,20 @@ CorporateTrainingSystem.Application/Features/
     ├── IssueCertificate/
     └── ListCertifications/
 ```
+### Advanced Engineering Decisions
+
+**Concurrency:** Enrollment capacity (BR-02) is checked before insert, then re-verified
+after commit. If a race condition causes capacity to be exceeded, the just-created
+enrollment is automatically rolled back to Cancelled and the user is notified. This
+avoids full transaction isolation while still preventing persisted over-capacity states.
+
+**Rate Limiting:** The Login endpoint is limited to 5 attempts per minute per client
+using ASP.NET Core's built-in fixed-window rate limiter, mitigating brute-force
+credential guessing without requiring external infrastructure.
+
+**Caching:** The active course list is cached in-memory for 5 minutes, since it's a
+read-heavy dataset that changes infrequently. Trade-off: newly created courses may
+take up to 5 minutes to appear in the list.
 
 **Benefits:**
 - High cohesion: Everything needed for a use case lives together.

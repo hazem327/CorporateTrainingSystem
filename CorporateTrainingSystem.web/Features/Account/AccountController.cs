@@ -1,7 +1,8 @@
-using CorporateTrainingSystem.Infrastructure.Identity;   
+using CorporateTrainingSystem.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;                      
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace CorporateTrainingSystem.Web.Features.Account
 {
@@ -30,6 +31,7 @@ namespace CorporateTrainingSystem.Web.Features.Account
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [EnableRateLimiting("LoginPolicy")]
         public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
@@ -55,7 +57,7 @@ namespace CorporateTrainingSystem.Web.Features.Account
             return View(model);
         }
 
-        // Only Admins can create new accounts 
+        // Only Admins can create new accounts
         // and avoids public self-registration into a training/certification system.
         [Authorize(Roles = "Administrator")]
         [HttpGet]

@@ -103,6 +103,25 @@ namespace CorporateTrainingSystem.Application.Features.Enrollments.EnrollEmploye
             await _unitOfWork.Repository<Enrollment>().AddAsync(enrollment);
             await _unitOfWork.SaveChangesAsync();
 
+            // Concurrency safeguard: re-check capacity after commit in case of a race
+            // between two simultaneous requests for the last available seat (BR-02).
+            var finalActiveCount = _unitOfWork.Repository<Enrollment>().Query()
+                .Count(e => e.TrainingSessionId == command.TrainingSessionId &&
+                            e.Status == EnrollmentStatus.Active);
+
+            if (finalActiveCount > session.Capacity)
+            {
+                enrollment.Status = EnrollmentStatus.Cancelled;
+                _unitOfWork.Repository<Enrollment>().Update(enrollment);
+                await _unitOfWork.SaveChangesAsync();
+
+                return new EnrollEmployeeResult
+                {
+                    Success = false,
+                    ErrorMessage = $"Session filled up while processing your request (BR-02)."
+                };
+            }
+
             return new EnrollEmployeeResult
             {
                 Success = true,

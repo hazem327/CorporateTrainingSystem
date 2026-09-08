@@ -21,6 +21,8 @@ using CorporateTrainingSystem.Application.Features.Assessments.RecordAssessmentR
 using CorporateTrainingSystem.Application.Features.Certifications.IssueCertificate;
 using CorporateTrainingSystem.Application.Features.Certifications.ListCertifications;
 using CorporateTrainingSystem.Web.Middleware;
+using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,6 +77,23 @@ builder.Services.AddScoped<IValidator<RecordAssessmentResultCommand>, RecordAsse
 builder.Services.AddScoped<IssueCertificateHandler>();
 builder.Services.AddScoped<ListCertificationsHandler>();
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("LoginPolicy", opt =>
+    {
+        opt.PermitLimit = 5;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 0;
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+    });
+
+    options.OnRejected = async (context, token) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        await context.HttpContext.Response.WriteAsync("Too many login attempts. Please wait a minute and try again.", token);
+    };
+});
+builder.Services.AddMemoryCache();
 var app = builder.Build();
 
 app.UseMiddleware<GlobalExceptionMiddleware>();
@@ -98,7 +117,7 @@ using (var scope = app.Services.CreateScope())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
-
+app.UseRateLimiter();
 app.UseAuthentication();   // must come before UseAuthorization
 app.UseAuthorization();
 
