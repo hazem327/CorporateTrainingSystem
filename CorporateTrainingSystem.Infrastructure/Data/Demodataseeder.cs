@@ -37,6 +37,20 @@ namespace CorporateTrainingSystem.Infrastructure.Data
                 new() { EmployeeNumber = "EMP-1004", FullName = "Youssef Mansour", Email = "youssef.mansour@corp.local", JobTitle = "Sales Executive", HireDate = DateTime.Today.AddYears(-1), DepartmentId = sales.Id, IsActive = true },
                 new() { EmployeeNumber = "EMP-1005", FullName = "Nour Hassan", Email = "nour.hassan@corp.local", JobTitle = "Training Coordinator", HireDate = DateTime.Today.AddYears(-2), DepartmentId = hr.Id, IsActive = true },
                 new() { EmployeeNumber = "EMP-1006", FullName = "Karim Adel", Email = "karim.adel@corp.local", JobTitle = "Lead Instructor", HireDate = DateTime.Today.AddYears(-5), DepartmentId = engineering.Id, IsActive = true },
+                new() { EmployeeNumber = "EMP-1007", FullName = "Mona Fathy", Email = "mona.fathy@corp.local", JobTitle = "QA Engineer", HireDate = DateTime.Today.AddYears(-2), DepartmentId = engineering.Id, IsActive = true },
+                new() { EmployeeNumber = "EMP-1008", FullName = "Tarek Samir", Email = "tarek.samir@corp.local", JobTitle = "Backend Developer", HireDate = DateTime.Today.AddMonths(-8), DepartmentId = engineering.Id, IsActive = true },
+                new() { EmployeeNumber = "EMP-1009", FullName = "Hana Ibrahim", Email = "hana.ibrahim@corp.local", JobTitle = "Recruiter", HireDate = DateTime.Today.AddYears(-1), DepartmentId = hr.Id, IsActive = true },
+                new() { EmployeeNumber = "EMP-1010", FullName = "Ziad Nabil", Email = "ziad.nabil@corp.local", JobTitle = "Sales Manager", HireDate = DateTime.Today.AddYears(-3), DepartmentId = sales.Id, IsActive = true },
+                new() { EmployeeNumber = "EMP-1011", FullName = "Dina Saeed", Email = "dina.saeed@corp.local", JobTitle = "Account Executive", HireDate = DateTime.Today.AddMonths(-5), DepartmentId = sales.Id, IsActive = true },
+                new() { EmployeeNumber = "EMP-1012", FullName = "Amr Ashraf", Email = "amr.ashraf@corp.local", JobTitle = "Frontend Developer", HireDate = DateTime.Today.AddYears(-1), DepartmentId = engineering.Id, IsActive = true },
+                new() { EmployeeNumber = "EMP-1013", FullName = "Rana Gamal", Email = "rana.gamal@corp.local", JobTitle = "HR Business Partner", HireDate = DateTime.Today.AddYears(-4), DepartmentId = hr.Id, IsActive = true },
+                new() { EmployeeNumber = "EMP-1014", FullName = "Khaled Fouad", Email = "khaled.fouad@corp.local", JobTitle = "Sales Development Rep", HireDate = DateTime.Today.AddMonths(-3), DepartmentId = sales.Id, IsActive = true },
+                new() { EmployeeNumber = "EMP-1015", FullName = "Salma Tarek", Email = "salma.tarek@corp.local", JobTitle = "Software Engineer", HireDate = DateTime.Today.AddYears(-2), DepartmentId = engineering.Id, IsActive = true },
+                new() { EmployeeNumber = "EMP-1016", FullName = "Mostafa Reda", Email = "mostafa.reda@corp.local", JobTitle = "Payroll Specialist", HireDate = DateTime.Today.AddYears(-5), DepartmentId = hr.Id, IsActive = true },
+                new() { EmployeeNumber = "EMP-1017", FullName = "Yasmin Adel", Email = "yasmin.adel@corp.local", JobTitle = "Account Manager", HireDate = DateTime.Today.AddMonths(-10), DepartmentId = sales.Id, IsActive = true },
+                new() { EmployeeNumber = "EMP-1018", FullName = "Hossam Wael", Email = "hossam.wael@corp.local", JobTitle = "DevOps Engineer", HireDate = DateTime.Today.AddYears(-1), DepartmentId = engineering.Id, IsActive = false },
+                new() { EmployeeNumber = "EMP-1019", FullName = "Nada Hisham", Email = "nada.hisham@corp.local", JobTitle = "Talent Acquisition", HireDate = DateTime.Today.AddYears(-3), DepartmentId = hr.Id, IsActive = false },
+                new() { EmployeeNumber = "EMP-1020", FullName = "Ahmed Sabry", Email = "ahmed.sabry@corp.local", JobTitle = "Sales Associate", HireDate = DateTime.Today.AddMonths(-6), DepartmentId = sales.Id, IsActive = true },
             };
 
             context.Employees.AddRange(employees);
