@@ -1022,3 +1022,88 @@ h1, h2, h3, h4, h5, h6, .headline-font {
   font-size: 20px;
   color: var(--primary-container);
 }
+
+/* ===== Server-Side Pagination & Table Sort Headers ===== */
+.pagination-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-top: 1px solid var(--surface-high);
+  background-color: var(--surface-lowest);
+  border-bottom-left-radius: var(--radius-2xl);
+  border-bottom-right-radius: var(--radius-2xl);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.pagination-summary {
+  font-size: 13px;
+  color: var(--outline);
+  font-weight: 500;
+}
+
+.pagination-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.page-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background-color: var(--surface-lowest);
+  color: var(--on-surface);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+}
+
+.page-btn:hover:not(.disabled):not(.active) {
+  background-color: var(--surface-high);
+  border-color: var(--outline-variant);
+  color: var(--primary-container);
+}
+
+.page-btn.active {
+  background-color: var(--primary-container);
+  border-color: var(--primary-container);
+  color: white;
+}
+
+.page-btn.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.sortable-th {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease;
+}
+
+.sortable-th a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.sortable-th:hover {
+  color: var(--primary-container);
+}
+
+.sort-icon {
+  font-size: 16px;
+  vertical-align: middle;
+}

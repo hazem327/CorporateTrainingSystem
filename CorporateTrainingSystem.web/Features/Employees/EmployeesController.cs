@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using CorporateTrainingSystem.Application.Features.Employees.UpdateEmployee;
 using CorporateTrainingSystem.Application.Features.Employees.DeactivateEmployee;
-using CorporateTrainingSystem.Application.Features.Employees.ListEmployees;
 
 namespace CorporateTrainingSystem.Web.Features.Employees
 {

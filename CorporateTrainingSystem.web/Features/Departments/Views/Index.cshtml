@@ -1,37 +1,163 @@
 @model List<CorporateTrainingSystem.Application.Features.Departments.ListDepartments.DepartmentListItem>
 @{
     ViewData["Title"] = "Departments";
+    var totalDepartments = Model.Count;
+    var totalAssignedEmployees = Model.Sum(d => d.EmployeeCount);
 }
 
-<h2>Departments</h2>
-
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
-}
-
-<a asp-action="Create" class="btn-accent" style="margin-bottom: 14px; display:inline-block;">Add Department</a>
-
-<div class="op-table-wrap">
-<table class="op-table">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Active Employees</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var dept in Model)
-        {
-            <tr>
-                <td class="primary-text">@dept.Name</td>
-                <td>@dept.Description</td>
-                <td>@dept.EmployeeCount</td>
-                <td><a asp-action="Edit" asp-route-id="@dept.Id" class="btn-outline btn-sm">Edit</a></td>
-            </tr>
-        }
-    </tbody>
-</table>
+<div class="page-header-row">
+    <div>
+        <div class="page-badge-label">
+            <span class="page-badge-dot"></span>
+            Organizational Structure
+        </div>
+        <h1 class="page-title">Departments</h1>
+        <p class="page-subtitle">Configure business departments, functional divisions, and monitor workforce headcount.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <a asp-action="Create" class="btn-skill-primary">
+            <span class="material-symbols-outlined">domain_add</span>
+            <span>Add Department</span>
+        </a>
+    </div>
 </div>
+
+<!-- KPI Metrics Grid -->
+<div class="metric-grid">
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Total Departments</span>
+                <div class="metric-value">@totalDepartments</div>
+            </div>
+            <div class="metric-icon-box purple">
+                <span class="material-symbols-outlined text-[24px]">corporate_fare</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <span>Organizational business units</span>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Assigned Staff</span>
+                <div class="metric-value" style="color: var(--tertiary);">@totalAssignedEmployees</div>
+            </div>
+            <div class="metric-icon-box green">
+                <span class="material-symbols-outlined text-[24px]">badge</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <span>Active employees in departments</span>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Directory</span>
+                <div class="metric-value">Workforce</div>
+            </div>
+            <div class="metric-icon-box orange">
+                <span class="material-symbols-outlined text-[24px]">group</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <a asp-controller="Employees" asp-action="Index" class="btn-skill-subtle btn-skill-sm">
+                <span>View Employees</span>
+                <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Operations</span>
+                <div class="metric-value">Active</div>
+            </div>
+            <div class="metric-icon-box purple">
+                <span class="material-symbols-outlined text-[24px]">verified_user</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            <span>Corporate hierarchy management</span>
+        </div>
+    </div>
+</div>
+
+<!-- Table Card -->
+<div class="table-container-card">
+    <div class="table-responsive">
+        <table class="skillops-table" id="departmentsTable">
+            <thead>
+                <tr>
+                    <th>Department Name</th>
+                    <th>Description</th>
+                    <th>Active Employees</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model == null || !Model.Any())
+                {
+                    <tr>
+                        <td colspan="4" class="text-center py-5 text-muted">
+                            <span class="material-symbols-outlined" style="font-size: 40px; color: var(--outline);">domain_disabled</span>
+                            <p class="mt-2 mb-0">No departments configured yet.</p>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var dept in Model)
+                    {
+                        var deptInitials = string.Join("", dept.Name.Split(' ')
+                            .Where(p => p.Length > 0)
+                            .Select(p => p[0]))
+                            .ToUpper();
+                        if (deptInitials.Length > 2) { deptInitials = deptInitials.Substring(0, 2); }
+                        if (string.IsNullOrEmpty(deptInitials)) { deptInitials = "DP"; }
+
+                        <tr data-search="@dept.Name.ToLower() @(dept.Description?.ToLower() ?? "")">
+                            <td>
+                                <div class="employee-profile-cell">
+                                    <div class="avatar-badge teal">@deptInitials</div>
+                                    <div>
+                                        <div class="table-cell-title">@dept.Name</div>
+                                        <div class="table-cell-sub">ID: #@dept.Id</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="table-cell-sub" style="font-size: 13.5px; color: var(--on-surface);">
+                                    @(string.IsNullOrWhiteSpace(dept.Description) ? "No description provided." : dept.Description)
+                                </span>
+                            </td>
+                            <td>
+                                <span class="status-badge valid">
+                                    <span class="status-dot"></span>
+                                    @dept.EmployeeCount Active
+                                </span>
+                            </td>
+                            <td style="text-align: right;">
+                                <div class="d-inline-flex gap-2">
+                                    <a asp-action="Edit" asp-route-id="@dept.Id" class="btn-skill-outline btn-skill-sm">
+                                        <span class="material-symbols-outlined" style="font-size: 15px;">edit</span>
+                                        <span>Edit</span>
+                                    </a>
+                                    <a asp-controller="Employees" asp-action="Index" asp-route-departmentId="@dept.Id" class="btn-skill-subtle btn-skill-sm">
+                                        <span class="material-symbols-outlined" style="font-size: 15px;">group</span>
+                                        <span>View Staff</span>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

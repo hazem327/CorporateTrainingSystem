@@ -33,12 +33,12 @@ Designed and developed for the Technical Internship Project Assignment by **Haze
 The **Corporate Training & Certification Management System** streamlines end-to-end organizational learning, from scheduling training sessions and managing employee enrollments to tracking attendance, grading assessments, issuing digital certifications, and monitoring expiry dates.
 
 ### Core Capabilities:
-- **Employee & Department Management:** Maintain employee records, job titles, department assignments, and active statuses.
-- **Course Catalog Management:** Configure training courses with duration, categories, passing score criteria, and certificate validity duration.
-- **Session Scheduling:** Plan training sessions with instructors, dates, and strict capacity enforcement.
-- **Enrollment Workflow:** Self-enrollment for employees and administrative enrollments for managers, guarded against duplicate enrollments and overbooking.
-- **Attendance & Assessment:** Record attendance and score employee exams (0–100) with automatic pass/fail evaluation.
-- **Certification Lifecycle:** Automatic generation of unique certificate numbers (`CERT-yyyyMMdd-XXXXX`), validity expiry calculation, and status tracking (`Valid`, `ExpiringSoon`, `Expired`).
+- **Employee & Department Management:** Full Department CRUD (Create, List, Update) and Employee management with server-side search, department filtering, sorting, pagination, and soft-delete deactivation preserving historical records (`IsActive`).
+- **Course Catalog Management:** Configure training courses with duration, categories, passing score criteria, and certificate validity duration, with in-memory caching of active offerings.
+- **Session Scheduling & Lifecycle:** Plan training sessions with instructors, dates, and strict capacity enforcement, plus session cancellation preserving enrollments and preventing cancellation of started/completed cohorts.
+- **Enrollment Workflow:** Self-enrollment for employees and administrative enrollments for managers, guarded against duplicate enrollments and overbooking with post-insert concurrency safeguards.
+- **Attendance & Assessment:** Record attendance and score employee exams (0–100) with automatic pass/fail evaluation, protected by instructor-level ownership checks.
+- **Certification Lifecycle:** Automatic generation of unique certificate numbers (`CERT-yyyyMMdd-XXXXX`), validity expiry calculation, and status tracking (`Valid`, `ExpiringSoon`, `Expired`) with resilient email notifications and audit logging.
 
 ---
 
@@ -64,38 +64,61 @@ Instead of rigid horizontal layering where logic is split across disconnected ge
 
 ```
 CorporateTrainingSystem.Application/Features/
+├── Departments/
+│   ├── CreateDepartment/     --> Command, Handler, Validator
+│   ├── ListDepartments/      --> Query, Handler, DepartmentListItem
+│   └── UpdateDepartment/     --> Command, Handler, Validator
 ├── Courses/
 │   ├── CreateCourse/         --> Command, Handler, Validator, Result
-│   └── ListCourses/          --> Query, Handler, ViewModel
+│   └── ListCourses/          --> Query, Handler, ViewModel (Cached)
+├── Employees/
+│   ├── CreateEmployee/       --> Command, Handler, Validator
+│   ├── UpdateEmployee/       --> Command, Handler, Validator
+│   ├── DeactivateEmployee/   --> Handler (Soft-delete IsActive)
+│   └── ListEmployees/        --> Query (IQueryable filter/sort/page), Handler, Result
 ├── Sessions/
-│   ├── CreateSessions/       --> Command, Handler, Validator, Result
+│   ├── CreateSession/        --> Command, Handler, Validator, Result
+│   ├── CancelSession/        --> Handler, Result (Guarded against started/completed)
 │   └── ListSessions/         --> Query, Handler, ViewModel
 ├── Enrollments/
-│   ├── EnrollEmployee/       --> Command, Handler, Validator, Result
-│   ├── CancelEnrollment/     --> Command, Handler, Validator, Result
+│   ├── EnrollEmployee/       --> Command, Handler, Validator, Result (Concurrency-safe)
+│   ├── CancelEnrollment/     --> Command, Handler, Result (Audit-logged)
 │   ├── ListEnrollments/      --> Query, Handler, ViewModel
 │   └── GetTrainingHistory/   --> Query, Handler, DTOs
 ├── Assessments/
 │   ├── RecordAssessmentResult/
 │   └── RecordAttendance/
 └── Certifications/
-    ├── IssueCertificate/
-    └── ListCertifications/
+    ├── IssueCertificate/    --> Command, Handler, Result (Audit-logged & resilient email)
+    └── ListCertifications/   --> Query, Handler, ViewModel (Scoped by Employee)
 ```
 ### Advanced Engineering Decisions
 
 **Concurrency:** Enrollment capacity (BR-02) is checked before insert, then re-verified
-after commit. If a race condition causes capacity to be exceeded, the just-created
-enrollment is automatically rolled back to Cancelled and the user is notified. This
-avoids full transaction isolation while still preventing persisted over-capacity states.
+after commit. If a race condition causes capacity to be exceeded due to simultaneous requests,
+the just-created enrollment is automatically rolled back to Cancelled and the user is notified. This
+avoids locking or full transaction isolation while strictly preventing persisted over-capacity states.
 
-**Rate Limiting:** The Login endpoint is limited to 5 attempts per minute per client
-using ASP.NET Core's built-in fixed-window rate limiter, mitigating brute-force
-credential guessing without requiring external infrastructure.
+**Rate Limiting:** The Login endpoint is protected using ASP.NET Core's built-in fixed-window
+rate limiter configured with a **global fixed-window policy** (5 attempts per minute globally),
+mitigating brute-force credential guessing without requiring external Redis or gateway infrastructure.
 
-**Caching:** The active course list is cached in-memory for 5 minutes, since it's a
-read-heavy dataset that changes infrequently. Trade-off: newly created courses may
-take up to 5 minutes to appear in the list.
+**Caching:** The active course list is cached in-memory (`IMemoryCache`) for 5 minutes, filtering
+strictly for active offerings (`c.IsActive`), matching read-heavy query access patterns.
+
+**Resilience (Polly):** External email dispatch (`IEmailNotificationService` / `EmailNotificationService`)
+is wrapped with a Polly resilience pipeline combining a 3-second timeout, 2 retries with exponential backoff,
+and a circuit breaker (breaking after 3 consecutive faults for 30 seconds). Triggered when issuing certificates,
+email failures are logged and gracefully absorbed without blocking or rolling back successful certificate creation.
+
+**Audit Trail:** System activities (`CancelEnrollment`, `IssueCertificate`) are recorded in an immutable
+`AuditLogEntries` table through `IAuditLogger`. Actor identity (`ActorUserId`, `ActorEmail`) is passed
+cleanly from MVC controllers through application commands to handlers, maintaining separation of concerns
+since domain/application handlers have no direct dependency on `HttpContext` or `User`.
+
+**Resource-Level Authorization:**
+- Employees can only view their own certifications (enforced in `CertificationsController` via `ListCertificationsHandler` taking an optional `employeeIdFilter`).
+- Instructors can only view and manage attendance/assessment for training sessions they are assigned to teach (`CanManageThisEnrollment` check in `AssessmentsController`, applied to both `GET` and `POST`).
 
 **Benefits:**
 - High cohesion: Everything needed for a use case lives together.
@@ -119,16 +142,19 @@ The application implements Role-Based Access Control (RBAC) configured via `[Aut
 | Feature / Action | Administrator | Training Manager | Instructor | Employee |
 |---|:---:|:---:|:---:|:---:|
 | **Manage Users & Register Accounts** | ✅ | ❌ | ❌ | ❌ |
-| **Create Departments & Employees** | ✅ | ✅ | ❌ | ❌ |
+| **Manage Departments (Create / Edit / List)** | ✅ | ✅ | ❌ | ❌ |
+| **Manage Employees (Create / Edit / Deactivate)** | ✅ | ✅ | ❌ | ❌ |
+| **Employee Search / Filter / Sort / Pagination** | ✅ | ✅ | ✅ | ✅ |
 | **Create Courses & Training Sessions** | ✅ | ✅ | ❌ | ❌ |
+| **Cancel Training Sessions** | ✅ | ✅ | ❌ | ❌ |
 | **View Course Catalog & Sessions** | ✅ | ✅ | ✅ | ✅ |
 | **Enroll Employees (Any)** | ✅ | ✅ | ❌ | ❌ |
 | **Self-Enroll in Open Sessions** | ✅ | ✅ | ❌ | ✅ |
 | **Cancel Enrollments** | ✅ (Any) | ✅ (Any) | ❌ | ✅ (Own only) |
-| **Record Attendance & Scores** | ✅ | ✅ | ✅ | ❌ |
-| **Issue Certifications** | ✅ | ✅ | ❌ | ❌ |
+| **Record Attendance & Scores** | ✅ | ✅ | ✅ (Assigned sessions only) | ❌ |
+| **Issue Certifications (Audit-Logged + Resilient Email)** | ✅ | ✅ | ❌ | ❌ |
 | **View Own Training History** | ✅ | ✅ | ✅ | ✅ |
-| **View All Certifications & Expiry** | ✅ | ✅ | ✅ | ✅ (Own) |
+| **View Certifications & Expiry** | ✅ (All) | ✅ (All) | ✅ (All) | ✅ (Own only) |
 
 ---
 
@@ -246,11 +272,24 @@ erDiagram
         datetime ExpiryDate
         int Status
     }
+
+    AUDIT_LOG_ENTRY {
+        int Id PK
+        string Action
+        string ActorUserId
+        string ActorEmail
+        datetime TimestampUtc
+        string Details
+    }
 ```
 
 ### Relational Integrity Highlights
-- **Foreign Key Restraints:** All cascading foreign keys use `DeleteBehavior.Restrict` in `AppDbContext.cs` to prevent accidental loss of historical corporate audit data.
+- **Unique Constraints (Database-Level):** Configured via Fluent API in `AppDbContext.cs` and enforced with database indexes:
+  - `Employees.EmployeeNumber` is guaranteed unique (`HasIndex(e => e.EmployeeNumber).IsUnique()`).
+  - `Certifications.CertificateNumber` is guaranteed unique (`HasIndex(c => c.CertificateNumber).IsUnique()`).
+- **Foreign Key Restraints:** All cascading foreign keys use `DeleteBehavior.Restrict` in `AppDbContext.cs` to prevent accidental cascading deletion of corporate and audit data.
 - **Identity Links:** `ApplicationUser` maintains an optional foreign key `EmployeeId` referencing `Employee`.
+- **Soft Deletion & History Preservation:** `Employee.IsActive`, `TrainingSession.Status = Cancelled`, and `Enrollment.Status = Cancelled` guarantee no destructive deletes occur on historical records.
 
 ---
 
@@ -311,20 +350,25 @@ On startup, `DbSeeder.cs` ensures default roles and an administrator account exi
 ## Key User Workflows
 
 ```
-1. Course Setup
-   Training Manager / Admin ➔ Courses ➔ Create Course ➔ Set Passing Score & Validity ➔ Save
+1. Department & Employee Setup
+   Admin / Training Manager ➔ Departments ➔ Add Department ➔ Save
+   Admin / Training Manager ➔ Employees ➔ Add Employee / Edit / Deactivate ➔ Filter/Sort/Page Directory
 
-2. Session Scheduling
+2. Course Setup
+   Training Manager / Admin ➔ Courses ➔ Create Course ➔ Set Passing Score & Validity ➔ Save (Cached for 5m)
+
+3. Session Scheduling & Lifecycle
    Training Manager / Admin ➔ Sessions ➔ Schedule Session ➔ Select Course, Instructor, Dates, Capacity ➔ Save
+   Training Manager / Admin ➔ Sessions ➔ Cancel (Guarded against started/completed sessions)
 
-3. Employee Enrollment
-   Employee / Manager ➔ Enrollments ➔ Enroll in Session ➔ Validates Availability & Limits ➔ Confirmed
+4. Employee Enrollment
+   Employee / Manager ➔ Enrollments ➔ Enroll in Session ➔ Validates Availability, Limits & Concurrency ➔ Confirmed
 
-4. Attendance & Assessment Grading
-   Instructor / Manager ➔ Enrollments ➔ Record Result ➔ Mark Attendance (Present/Absent) & Enter Score (0-100) ➔ Pass/Fail Auto-calculated
+5. Attendance & Assessment Grading
+   Instructor / Manager ➔ Enrollments ➔ Record Result ➔ Instructor Assignment Verified ➔ Mark Attendance & Exam Score (0-100) ➔ Pass/Fail Auto-calculated
 
-5. Certificate Issuance & Monitoring
-   Training Manager / Admin ➔ Enrollments (Completed) ➔ Issue Certificate ➔ Expiry Date Calculated ➔ Track on Certifications Dashboard
+6. Certificate Issuance & Monitoring
+   Training Manager / Admin ➔ Enrollments (Completed) ➔ Issue Certificate ➔ Audit Log Recorded ➔ Resilient Email Notification ➔ Track on Certifications Dashboard
 ```
 
 ---
@@ -458,34 +502,37 @@ ORDER BY d.Name, e.FullName;
 CorporateTrainingSystem/
 │
 ├── CorporateTrainingSystem.Domain/             # Enterprise Entities, Enums & Core Interfaces
-│   ├── Entities/                               # Department, Employee, Course, TrainingSession, Enrollment, Attendance, AssessmentResult, Certification
-│   └── Interfaces/                             # IRepository<T>, IUnitOfWork
+│   ├── Entities/                               # Department, Employee, Course, TrainingSession, Enrollment, Attendance, AssessmentResult, Certification, AuditLogEntry
+│   └── Interfaces/                             # IRepository<T>, IUnitOfWork, IAuditLogger
 │
 ├── CorporateTrainingSystem.Infrastructure/     # Persistence & External Services
-│   ├── Data/                                   # AppDbContext, DbSeeder
+│   ├── Data/                                   # AppDbContext, DbSeeder, DemoDataSeeder
 │   ├── Identity/                               # ApplicationUser (ASP.NET Core Identity)
-│   ├── Migrations/                             # EF Core SQL Migrations
+│   ├── Migrations/                             # EF Core SQL Migrations (including unique constraints & audit trail)
+│   ├── External Services/                      # AuditLogger, EmailNotificationService (Polly resilience pipeline)
 │   └── Repositories/                           # Generic Repository<T>, UnitOfWork implementation
 │
 ├── CorporateTrainingSystem.Application/        # Vertical Slice Business Logic
 │   └── Features/
-│       ├── Courses/                            # CreateCourse, ListCourses
-│       ├── Employees/                          # CreateEmployee, ListEmployees
-│       ├── Sessions/                           # CreateSession, ListSessions
-│       ├── Enrollments/                        # EnrollEmployee, CancelEnrollment, ListEnrollments, GetTrainingHistory
-│       ├── Assessments/                        # RecordAssessmentResult, RecordAttendance
-│       └── Certifications/                     # IssueCertificate, ListCertifications
+│       ├── Departments/                        # CreateDepartment, UpdateDepartment, ListDepartments
+│       ├── Courses/                            # CreateCourse, ListCourses (In-memory cached)
+│       ├── Employees/                          # CreateEmployee, UpdateEmployee, DeactivateEmployee, ListEmployees (Server-side IQueryable filter/sort/page)
+│       ├── Sessions/                           # CreateSession, CancelSession, ListSessions
+│       ├── Enrollments/                        # EnrollEmployee (Concurrency-safe), CancelEnrollment (Audit-logged), ListEnrollments, GetTrainingHistory
+│       ├── Assessments/                        # RecordAssessmentResult, RecordAttendance (Instructor authorization)
+│       └── Certifications/                     # IssueCertificate (Audit-logged & resilient email), ListCertifications (Employee filtered)
 │
 ├── CorporateTrainingSystem.web/                # Presentation Layer (ASP.NET Core MVC)
 │   ├── Controllers/                            # HomeController
-│   ├── Features/                               # Sliced Controllers & Razor Views (Account, Courses, Sessions, Employees, Enrollments, Assessments, Certifications)
-│   ├── Views/Shared/                           # _Layout, validation scripts, error views
-│   ├── wwwroot/                                # Static styles, scripts, Bootstrap & jQuery
-│   └── Program.cs                              # Application startup, DI configuration, Auth & Middleware
+│   ├── Features/                               # Sliced Controllers & Razor Views (Account, Departments, Courses, Sessions, Employees, Enrollments, Assessments, Certifications)
+│   ├── Views/Shared/                           # _Layout (SkillOps Sidebar, Quick Action Menu), validation scripts, error views
+│   ├── wwwroot/                                # Static styles (site.css with SkillOps design system), scripts, Bootstrap & jQuery
+│   └── Program.cs                              # Application startup, DI configuration, Auth, Rate Limiting & Middleware
 │
 └── CorporateTrainingSystem.Tests/              # Automated Test Suite
     └── EnrollmentBusinessRuleTests.cs          # Unit tests covering BR-01 to BR-07
 ```
+
 
 ---
 

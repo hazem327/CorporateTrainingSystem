@@ -194,6 +194,16 @@
                                         <span class="material-symbols-outlined" style="font-size: 14px;">visibility</span>
                                         <span>Roster</span>
                                     </a>
+                                    @if ((User.IsInRole("Administrator") || User.IsInRole("TrainingManager")) && s.Status == "Scheduled")
+                                    {
+                                        <form asp-action="Cancel" asp-route-id="@s.Id" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel Session #@s.Id for @s.CourseTitle?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn-skill-danger btn-skill-sm">
+                                                <span class="material-symbols-outlined" style="font-size: 14px;">cancel</span>
+                                                <span>Cancel</span>
+                                            </button>
+                                        </form>
+                                    }
                                 </div>
                             </td>
                         </tr>

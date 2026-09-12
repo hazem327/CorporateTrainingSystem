@@ -26,7 +26,6 @@ using Microsoft.AspNetCore.RateLimiting;
 using CorporateTrainingSystem.Application.Features.Departments.CreateDepartment;
 using CorporateTrainingSystem.Application.Features.Departments.ListDepartments;
 using CorporateTrainingSystem.Application.Features.Departments.UpdateDepartment;
-using CorporateTrainingSystem.Domain.Interfaces;
 using CorporateTrainingSystem.Infrastructure.Services;
 using CorporateTrainingSystem.Infrastructure.ExternalServices;
 using CorporateTrainingSystem.Application.Features.Employees.UpdateEmployee;

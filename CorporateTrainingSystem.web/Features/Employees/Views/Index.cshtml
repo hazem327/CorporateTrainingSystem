@@ -1,8 +1,29 @@
-@model List<CorporateTrainingSystem.Application.Features.Employees.ListEmployees.EmployeeListItem>
+@model CorporateTrainingSystem.Application.Features.Employees.ListEmployees.EmployeeListResult
 @{
     ViewData["Title"] = "Employee Directory";
-    var totalEmployees = Model.Count;
-    var activeEmployees = Model.Count(e => e.IsActive);
+    var query = ViewBag.Query as CorporateTrainingSystem.Application.Features.Employees.ListEmployees.EmployeeListQuery ?? new CorporateTrainingSystem.Application.Features.Employees.ListEmployees.EmployeeListQuery();
+    var currentSort = query.SortBy ?? "Name";
+    var isDesc = query.SortDescending;
+
+    string GetSortUrl(string column)
+    {
+        bool nextDesc = (currentSort == column) ? !isDesc : false;
+        return Url.Action("Index", new {
+            SearchTerm = query.SearchTerm,
+            DepartmentId = query.DepartmentId,
+            IsActive = query.IsActive,
+            SortBy = column,
+            SortDescending = nextDesc,
+            Page = 1,
+            PageSize = query.PageSize
+        }) ?? "#";
+    }
+
+    string GetSortIcon(string column)
+    {
+        if (currentSort != column) return "unfold_more";
+        return isDesc ? "arrow_downward" : "arrow_upward";
+    }
 }
 
 <div class="page-header-row">
@@ -12,7 +33,7 @@
             Workforce Directory
         </div>
         <h1 class="page-title">Employees &amp; Learners</h1>
-        <p class="page-subtitle">Manage employee records, department assignments, and access full training histories.</p>
+        <p class="page-subtitle">Manage employee records, organizational departments, and access full training histories.</p>
     </div>
     <div class="d-flex align-items-center gap-2">
         @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
@@ -31,29 +52,54 @@
         <div class="metric-header">
             <div>
                 <span class="metric-label">Total Staff</span>
-                <div class="metric-value">@totalEmployees</div>
+                <div class="metric-value">@Model.TotalCount</div>
             </div>
             <div class="metric-icon-box purple">
                 <span class="material-symbols-outlined text-[24px]">group</span>
             </div>
         </div>
         <div class="metric-footer">
-            <span>Corporate employees in system</span>
+            <span>Corporate employees matched</span>
         </div>
     </div>
 
     <div class="metric-card">
         <div class="metric-header">
             <div>
-                <span class="metric-label">Active Learners</span>
-                <div class="metric-value" style="color: var(--tertiary);">@activeEmployees</div>
+                <span class="metric-label">Directory Page</span>
+                <div class="metric-value" style="color: var(--tertiary);">@Model.Page / @Math.Max(1, Model.TotalPages)</div>
             </div>
             <div class="metric-icon-box green">
                 <span class="material-symbols-outlined text-[24px]">verified_user</span>
             </div>
         </div>
         <div class="metric-footer">
-            <span>Eligible for enrollment</span>
+            <span>Server-side paginated</span>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-header">
+            <div>
+                <span class="metric-label">Departments</span>
+                <div class="metric-value">Structure</div>
+            </div>
+            <div class="metric-icon-box orange">
+                <span class="material-symbols-outlined text-[24px]">corporate_fare</span>
+            </div>
+        </div>
+        <div class="metric-footer">
+            @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
+            {
+                <a asp-controller="Departments" asp-action="Index" class="btn-skill-subtle btn-skill-sm">
+                    <span>Manage Departments</span>
+                    <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
+                </a>
+            }
+            else
+            {
+                <span>Organizational units</span>
+            }
         </div>
     </div>
 
@@ -61,42 +107,62 @@
         <div class="metric-header">
             <div>
                 <span class="metric-label">Enrollments</span>
-                <div class="metric-value">Operations</div>
+                <div class="metric-value">Tracking</div>
             </div>
-            <div class="metric-icon-box orange">
+            <div class="metric-icon-box purple">
                 <span class="material-symbols-outlined text-[24px]">assignment_turned_in</span>
             </div>
         </div>
         <div class="metric-footer">
             <a asp-controller="Enrollments" asp-action="Index" class="btn-skill-subtle btn-skill-sm">
-                <span>View All Enrollments</span>
+                <span>View Enrollments</span>
+                <span class="material-symbols-outlined" style="font-size: 14px;">arrow_forward</span>
             </a>
         </div>
     </div>
+</div>
 
-    <div class="metric-card">
-        <div class="metric-header">
-            <div>
-                <span class="metric-label">User Accounts</span>
-                <div class="metric-value">Identity</div>
-            </div>
-            <div class="metric-icon-box purple">
-                <span class="material-symbols-outlined text-[24px]">admin_panel_settings</span>
+<!-- Server-Side Search & Filter Bar -->
+<div class="filter-card">
+    <form method="get" asp-action="Index" class="row g-3 align-items-end">
+        <input type="hidden" name="SortBy" value="@query.SortBy" />
+        <input type="hidden" name="SortDescending" value="@query.SortDescending.ToString().ToLower()" />
+        <input type="hidden" name="Page" value="1" />
+
+        <div class="col-md-4">
+            <label class="form-label font-weight-bold" style="font-size: 11px; text-transform: uppercase; color: var(--outline);">Search</label>
+            <div class="search-input-wrap">
+                <span class="material-symbols-outlined">search</span>
+                <input type="text" name="SearchTerm" value="@query.SearchTerm" placeholder="Search by name, number, email..." />
             </div>
         </div>
-        <div class="metric-footer">
-            @if (User.IsInRole("Administrator"))
-            {
-                <a asp-controller="Account" asp-action="Register" class="btn-skill-subtle btn-skill-sm">
-                    <span>Create User Login</span>
-                </a>
-            }
-            else
-            {
-                <span>Role-based access enabled</span>
-            }
+
+        <div class="col-md-3">
+            <label class="form-label font-weight-bold" style="font-size: 11px; text-transform: uppercase; color: var(--outline);">Department</label>
+            <select name="DepartmentId" asp-items="ViewBag.Departments" class="form-control-custom">
+                <option value="">-- All Departments --</option>
+            </select>
         </div>
-    </div>
+
+        <div class="col-md-2">
+            <label class="form-label font-weight-bold" style="font-size: 11px; text-transform: uppercase; color: var(--outline);">Status</label>
+            <select name="IsActive" class="form-control-custom">
+                <option value="">All Statuses</option>
+                <!option value="true" @(query.IsActive == true ? "selected" : "")>Active</!option>
+                <!option value="false" @(query.IsActive == false ? "selected" : "")>Inactive</!option>
+            </select>
+        </div>
+
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn-skill-primary flex-fill justify-content-center">
+                <span class="material-symbols-outlined" style="font-size: 16px;">filter_list</span>
+                <span>Filter</span>
+            </button>
+            <a asp-action="Index" class="btn-skill-outline" title="Reset Filters">
+                <span class="material-symbols-outlined" style="font-size: 16px;">restart_alt</span>
+            </a>
+        </div>
+    </form>
 </div>
 
 <!-- Employees Table Card -->
@@ -105,28 +171,43 @@
         <table class="skillops-table" id="employeesTable">
             <thead>
                 <tr>
-                    <th>Employee</th>
-                    <th>Employee #</th>
+                    <th class="sortable-th">
+                        <a href="@GetSortUrl("Name")">
+                            <span>Employee</span>
+                            <span class="material-symbols-outlined sort-icon">@GetSortIcon("Name")</span>
+                        </a>
+                    </th>
+                    <th class="sortable-th">
+                        <a href="@GetSortUrl("EmployeeNumber")">
+                            <span>Employee #</span>
+                            <span class="material-symbols-outlined sort-icon">@GetSortIcon("EmployeeNumber")</span>
+                        </a>
+                    </th>
                     <th>Email Address</th>
                     <th>Job Title</th>
-                    <th>Department</th>
+                    <th class="sortable-th">
+                        <a href="@GetSortUrl("Department")">
+                            <span>Department</span>
+                            <span class="material-symbols-outlined sort-icon">@GetSortIcon("Department")</span>
+                        </a>
+                    </th>
                     <th>Status</th>
                     <th style="text-align: right;">Actions</th>
                 </tr>
             </thead>
             <tbody>
-                @if (Model == null || !Model.Any())
+                @if (Model.Items == null || !Model.Items.Any())
                 {
                     <tr>
                         <td colspan="7" class="text-center py-5 text-muted">
                             <span class="material-symbols-outlined" style="font-size: 40px; color: var(--outline);">group</span>
-                            <p class="mt-2 mb-0">No employee profiles created yet.</p>
+                            <p class="mt-2 mb-0">No employee records match the criteria.</p>
                         </td>
                     </tr>
                 }
                 else
                 {
-                    @foreach (var emp in Model)
+                    @foreach (var emp in Model.Items)
                     {
                         var initials = string.Join("", emp.FullName.Split(' ')
                             .Where(p => p.Length > 0)
@@ -135,13 +216,13 @@
                         if (initials.Length > 2) { initials = initials.Substring(0, 2); }
                         if (string.IsNullOrEmpty(initials)) { initials = "EM"; }
 
-                        <tr data-search="@emp.FullName.ToLower() @emp.Email.ToLower() @emp.DepartmentName.ToLower() @emp.JobTitle.ToLower() @emp.EmployeeNumber.ToLower()">
+                        <tr>
                             <td>
                                 <div class="employee-profile-cell">
                                     <div class="avatar-badge">@initials</div>
                                     <div>
                                         <div class="table-cell-title">@emp.FullName</div>
-                                        <div class="table-cell-sub">Joined @emp.HireDate.ToString("yyyy-MM-dd")</div>
+                                        <div class="table-cell-sub">ID: #@emp.Id</div>
                                     </div>
                                 </div>
                             </td>
@@ -180,17 +261,28 @@
                             </td>
                             <td style="text-align: right;">
                                 <div class="d-inline-flex gap-2">
-                                    <a asp-controller="Enrollments" asp-action="History" asp-route-employeeId="@emp.Id" class="btn-skill-subtle">
+                                    @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@emp.Id" class="btn-skill-outline btn-skill-sm" title="Edit Employee">
+                                            <span class="material-symbols-outlined" style="font-size: 15px;">edit</span>
+                                            <span>Edit</span>
+                                        </a>
+
+                                        @if (emp.IsActive)
+                                        {
+                                            <form asp-action="Deactivate" asp-route-id="@emp.Id" method="post" class="d-inline" onsubmit="return confirm('Deactivate employee @emp.FullName? Historical training and certificate records will be preserved.');">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn-skill-danger btn-skill-sm" title="Deactivate Employee">
+                                                    <span class="material-symbols-outlined" style="font-size: 15px;">person_off</span>
+                                                    <span>Deactivate</span>
+                                                </button>
+                                            </form>
+                                        }
+                                    }
+                                    <a asp-controller="Enrollments" asp-action="History" asp-route-employeeId="@emp.Id" class="btn-skill-subtle btn-skill-sm">
                                         <span class="material-symbols-outlined" style="font-size: 15px;">history</span>
                                         <span>History</span>
                                     </a>
-                                    @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
-                                    {
-                                        <a asp-controller="Enrollments" asp-action="Index" asp-route-employeeId="@emp.Id" class="btn-skill-outline btn-skill-sm">
-                                            <span class="material-symbols-outlined" style="font-size: 15px;">visibility</span>
-                                            <span>Enrollments</span>
-                                        </a>
-                                    }
                                 </div>
                             </td>
                         </tr>
@@ -199,4 +291,81 @@
             </tbody>
         </table>
     </div>
+
+    <!-- Server-Side Pagination Footer -->
+    @if (Model.TotalPages > 1)
+    {
+        <div class="pagination-container">
+            <div class="pagination-summary">
+                Showing @(((Model.Page - 1) * Model.PageSize) + (Model.Items != null && Model.Items.Any() ? 1 : 0)) to @Math.Min(Model.Page * Model.PageSize, Model.TotalCount) of @Model.TotalCount employees
+            </div>
+            <div class="pagination-nav">
+                @if (Model.Page > 1)
+                {
+                    <a class="page-btn" href="@Url.Action("Index", new {
+                        SearchTerm = query.SearchTerm,
+                        DepartmentId = query.DepartmentId,
+                        IsActive = query.IsActive,
+                        SortBy = query.SortBy,
+                        SortDescending = query.SortDescending,
+                        Page = Model.Page - 1,
+                        PageSize = query.PageSize
+                    })">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">chevron_left</span>
+                    </a>
+                }
+                else
+                {
+                    <span class="page-btn disabled">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">chevron_left</span>
+                    </span>
+                }
+
+                @for (int p = 1; p <= Model.TotalPages; p++)
+                {
+                    if (p == Model.Page)
+                    {
+                        <span class="page-btn active">@p</span>
+                    }
+                    else if (p == 1 || p == Model.TotalPages || (p >= Model.Page - 2 && p <= Model.Page + 2))
+                    {
+                        <a class="page-btn" href="@Url.Action("Index", new {
+                            SearchTerm = query.SearchTerm,
+                            DepartmentId = query.DepartmentId,
+                            IsActive = query.IsActive,
+                            SortBy = query.SortBy,
+                            SortDescending = query.SortDescending,
+                            Page = p,
+                            PageSize = query.PageSize
+                        })">@p</a>
+                    }
+                    else if (p == Model.Page - 3 || p == Model.Page + 3)
+                    {
+                        <span class="page-btn disabled">...</span>
+                    }
+                }
+
+                @if (Model.Page < Model.TotalPages)
+                {
+                    <a class="page-btn" href="@Url.Action("Index", new {
+                        SearchTerm = query.SearchTerm,
+                        DepartmentId = query.DepartmentId,
+                        IsActive = query.IsActive,
+                        SortBy = query.SortBy,
+                        SortDescending = query.SortDescending,
+                        Page = Model.Page + 1,
+                        PageSize = query.PageSize
+                    })">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
+                    </a>
+                }
+                else
+                {
+                    <span class="page-btn disabled">
+                        <span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
+                    </span>
+                }
+            </div>
+        </div>
+    }
 </div>

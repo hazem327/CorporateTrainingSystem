@@ -72,6 +72,13 @@
                         @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
                         {
                             <li class="sidebar-nav-item">
+                                <a asp-controller="Departments" asp-action="Index"
+                                   class="@(currentController == "Departments" ? "active" : "")">
+                                    <span class="material-symbols-outlined">corporate_fare</span>
+                                    <span>Departments</span>
+                                </a>
+                            </li>
+                            <li class="sidebar-nav-item">
                                 <a asp-controller="Employees" asp-action="Index"
                                    class="@(currentController == "Employees" ? "active" : "")">
                                     <span class="material-symbols-outlined">group</span>
@@ -171,6 +178,10 @@
                         <div class="quick-action-menu" id="quickActionMenu">
                             @if (User.IsInRole("Administrator") || User.IsInRole("TrainingManager"))
                             {
+                                <a asp-controller="Departments" asp-action="Create" class="quick-action-item">
+                                    <span class="material-symbols-outlined">domain_add</span>
+                                    <span>Add Department</span>
+                                </a>
                                 <a asp-controller="Courses" asp-action="Create" class="quick-action-item">
                                     <span class="material-symbols-outlined">add_circle</span>
                                     <span>Create Course</span>
