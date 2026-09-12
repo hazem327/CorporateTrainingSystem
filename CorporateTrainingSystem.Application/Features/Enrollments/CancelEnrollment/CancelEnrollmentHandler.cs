@@ -6,10 +6,12 @@ namespace CorporateTrainingSystem.Application.Features.Enrollments.CancelEnrollm
     public class CancelEnrollmentHandler
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IAuditLogger _auditLogger;
 
-        public CancelEnrollmentHandler(IUnitOfWork unitOfWork)
+        public CancelEnrollmentHandler(IUnitOfWork unitOfWork, IAuditLogger auditLogger)
         {
             _unitOfWork = unitOfWork;
+            _auditLogger = auditLogger;
         }
 
         public async Task<CancelEnrollmentResult> HandleAsync(CancelEnrollmentCommand command)
@@ -46,6 +48,13 @@ namespace CorporateTrainingSystem.Application.Features.Enrollments.CancelEnrollm
             enrollment.Status = EnrollmentStatus.Cancelled;
             _unitOfWork.Repository<Enrollment>().Update(enrollment);
             await _unitOfWork.SaveChangesAsync();
+
+            // Audit: record who cancelled this enrollment and when.
+            await _auditLogger.LogAsync(
+                "EnrollmentCancelled",
+                command.ActorUserId,
+                command.ActorEmail,
+                details: $"EnrollmentId={enrollment.Id}, EmployeeId={enrollment.EmployeeId}");
 
             return new CancelEnrollmentResult
             {

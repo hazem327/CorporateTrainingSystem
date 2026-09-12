@@ -13,6 +13,7 @@ namespace CorporateTrainingSystem.Tests
         private readonly Mock<IRepository<TrainingSession>> _mockSessionRepo;
         private readonly Mock<IRepository<Employee>> _mockEmployeeRepo;
         private readonly Mock<IRepository<Enrollment>> _mockEnrollmentRepo;
+        private readonly Mock<IAuditLogger> _mockAuditLogger;
 
         public EnrollmentBusinessRuleTests()
         {
@@ -20,6 +21,7 @@ namespace CorporateTrainingSystem.Tests
             _mockSessionRepo = new Mock<IRepository<TrainingSession>>();
             _mockEmployeeRepo = new Mock<IRepository<Employee>>();
             _mockEnrollmentRepo = new Mock<IRepository<Enrollment>>();
+            _mockAuditLogger = new Mock<IAuditLogger>();
 
             _mockUow.Setup(u => u.Repository<TrainingSession>()).Returns(_mockSessionRepo.Object);
             _mockUow.Setup(u => u.Repository<Employee>()).Returns(_mockEmployeeRepo.Object);
@@ -217,7 +219,7 @@ namespace CorporateTrainingSystem.Tests
 
             _mockEnrollmentRepo.Setup(r => r.GetByIdAsync(enrollmentId)).ReturnsAsync(enrollment);
 
-            var handler = new CancelEnrollmentHandler(_mockUow.Object);
+            var handler = new CancelEnrollmentHandler(_mockUow.Object, _mockAuditLogger.Object);
             var command = new CancelEnrollmentCommand { EnrollmentId = enrollmentId };
 
             // Act
@@ -246,7 +248,7 @@ namespace CorporateTrainingSystem.Tests
 
             _mockEnrollmentRepo.Setup(r => r.GetByIdAsync(enrollmentId)).ReturnsAsync(enrollment);
 
-            var handler = new CancelEnrollmentHandler(_mockUow.Object);
+            var handler = new CancelEnrollmentHandler(_mockUow.Object, _mockAuditLogger.Object);;
             var command = new CancelEnrollmentCommand { EnrollmentId = enrollmentId };
 
             // Act

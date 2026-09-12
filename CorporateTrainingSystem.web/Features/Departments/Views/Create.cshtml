@@ -1,0 +1,21 @@
+@model CorporateTrainingSystem.Application.Features.Departments.CreateDepartment.CreateDepartmentCommand
+@{
+    ViewData["Title"] = "Add Department";
+}
+
+<h2>Add Department</h2>
+
+<div class="form-card">
+<form asp-action="Create" method="post">
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="mb-3">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="Description"></label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+    </div>
+    <button type="submit" class="btn-accent">Create</button>
+</form>
+</div>

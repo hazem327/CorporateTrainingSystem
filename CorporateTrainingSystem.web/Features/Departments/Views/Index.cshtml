@@ -1,0 +1,37 @@
+@model List<CorporateTrainingSystem.Application.Features.Departments.ListDepartments.DepartmentListItem>
+@{
+    ViewData["Title"] = "Departments";
+}
+
+<h2>Departments</h2>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<a asp-action="Create" class="btn-accent" style="margin-bottom: 14px; display:inline-block;">Add Department</a>
+
+<div class="op-table-wrap">
+<table class="op-table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Active Employees</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var dept in Model)
+        {
+            <tr>
+                <td class="primary-text">@dept.Name</td>
+                <td>@dept.Description</td>
+                <td>@dept.EmployeeCount</td>
+                <td><a asp-action="Edit" asp-route-id="@dept.Id" class="btn-outline btn-sm">Edit</a></td>
+            </tr>
+        }
+    </tbody>
+</table>
+</div>

@@ -3,5 +3,7 @@ namespace CorporateTrainingSystem.Application.Features.Certifications.IssueCerti
     public class IssueCertificateCommand
     {
         public int EnrollmentId { get; set; }
+        public string? ActorUserId { get; set; }
+        public string? ActorEmail { get; set; }
     }
 }

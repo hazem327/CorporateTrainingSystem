@@ -23,6 +23,15 @@ using CorporateTrainingSystem.Application.Features.Certifications.ListCertificat
 using CorporateTrainingSystem.Web.Middleware;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.RateLimiting;
+using CorporateTrainingSystem.Application.Features.Departments.CreateDepartment;
+using CorporateTrainingSystem.Application.Features.Departments.ListDepartments;
+using CorporateTrainingSystem.Application.Features.Departments.UpdateDepartment;
+using CorporateTrainingSystem.Domain.Interfaces;
+using CorporateTrainingSystem.Infrastructure.Services;
+using CorporateTrainingSystem.Infrastructure.ExternalServices;
+using CorporateTrainingSystem.Application.Features.Employees.UpdateEmployee;
+using CorporateTrainingSystem.Application.Features.Employees.DeactivateEmployee;
+using CorporateTrainingSystem.Application.Features.Sessions.CancelSession;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -76,6 +85,17 @@ builder.Services.AddScoped<RecordAssessmentResultHandler>();
 builder.Services.AddScoped<IValidator<RecordAssessmentResultCommand>, RecordAssessmentResultValidator>();
 builder.Services.AddScoped<IssueCertificateHandler>();
 builder.Services.AddScoped<ListCertificationsHandler>();
+builder.Services.AddScoped<CreateDepartmentHandler>();
+builder.Services.AddScoped<ListDepartmentsHandler>();
+builder.Services.AddScoped<UpdateDepartmentHandler>();
+builder.Services.AddScoped<IValidator<CreateDepartmentCommand>, CreateDepartmentValidator>();
+builder.Services.AddScoped<IValidator<UpdateDepartmentCommand>, UpdateDepartmentValidator>();
+builder.Services.AddScoped<IAuditLogger, AuditLogger>();
+builder.Services.AddScoped<IEmailNotificationService, EmailNotificationService>();
+builder.Services.AddScoped<UpdateEmployeeHandler>();
+builder.Services.AddScoped<DeactivateEmployeeHandler>();
+builder.Services.AddScoped<IValidator<UpdateEmployeeCommand>, UpdateEmployeeValidator>();
+builder.Services.AddScoped<CancelSessionHandler>();
 
 builder.Services.AddRateLimiter(options =>
 {

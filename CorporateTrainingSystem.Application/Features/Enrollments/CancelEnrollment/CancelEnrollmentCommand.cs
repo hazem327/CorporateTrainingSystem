@@ -3,5 +3,7 @@ namespace CorporateTrainingSystem.Application.Features.Enrollments.CancelEnrollm
     public class CancelEnrollmentCommand
     {
         public int EnrollmentId { get; set; }
+        public string? ActorUserId { get; set; }
+        public string? ActorEmail { get; set; }
     }
 }

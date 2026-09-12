@@ -17,6 +17,7 @@ namespace CorporateTrainingSystem.Infrastructure.Data
         public DbSet<Attendance> Attendances => Set<Attendance>();
         public DbSet<AssessmentResult> AssessmentResults => Set<AssessmentResult>();
         public DbSet<Certification> Certifications => Set<Certification>();
+        public DbSet<AuditLogEntry> AuditLogEntries => Set<AuditLogEntry>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -27,6 +28,14 @@ namespace CorporateTrainingSystem.Infrastructure.Data
                 .WithMany()
                 .HasForeignKey(u => u.EmployeeId)
                 .OnDelete(DeleteBehavior.Restrict);
+                
+            modelBuilder.Entity<Employee>()
+                .HasIndex(e => e.EmployeeNumber)
+                .IsUnique();
+
+            modelBuilder.Entity<Certification>()
+                .HasIndex(c => c.CertificateNumber)
+                .IsUnique();    
 
             foreach (var relationship in modelBuilder.Model.GetEntityTypes()
                          .SelectMany(e => e.GetForeignKeys()))

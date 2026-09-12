@@ -6,10 +6,12 @@ namespace CorporateTrainingSystem.Application.Features.Certifications.IssueCerti
     public class IssueCertificateHandler
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IAuditLogger _auditLogger;
 
-        public IssueCertificateHandler(IUnitOfWork unitOfWork)
+        public IssueCertificateHandler(IUnitOfWork unitOfWork, IAuditLogger auditLogger)
         {
             _unitOfWork = unitOfWork;
+            _auditLogger = auditLogger;
         }
 
         public async Task<IssueCertificateResult> HandleAsync(IssueCertificateCommand command)
@@ -75,6 +77,13 @@ namespace CorporateTrainingSystem.Application.Features.Certifications.IssueCerti
 
             await _unitOfWork.Repository<Certification>().AddAsync(certification);
             await _unitOfWork.SaveChangesAsync();
+
+            // Audit: record who issued this certificate and when.
+            await _auditLogger.LogAsync(
+                "CertificateIssued",
+                command.ActorUserId,
+                command.ActorEmail,
+                details: $"CertificateNumber={certificateNumber}, EmployeeId={enrollment.EmployeeId}, CourseId={course.Id}");
 
             return new IssueCertificateResult { Success = true, CertificateNumber = certificateNumber };
         }

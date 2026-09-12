@@ -12,11 +12,20 @@ namespace CorporateTrainingSystem.Application.Features.Certifications.ListCertif
             _unitOfWork = unitOfWork;
         }
 
-        public Task<List<CertificationListItem>> HandleAsync()
+        // employeeIdFilter: null means "no restriction" (Admin/TrainingManager/Instructor).
+        // A non-null value restricts results to that employee only (used for the Employee role).
+        public Task<List<CertificationListItem>> HandleAsync(int? employeeIdFilter = null)
         {
             var now = DateTime.UtcNow;
 
-            var certifications = _unitOfWork.Repository<Certification>().Query()
+            var query = _unitOfWork.Repository<Certification>().Query();
+
+            if (employeeIdFilter.HasValue)
+            {
+                query = query.Where(c => c.EmployeeId == employeeIdFilter.Value);
+            }
+
+            var certifications = query
                 .Select(c => new CertificationListItem
                 {
                     Id = c.Id,
@@ -25,7 +34,6 @@ namespace CorporateTrainingSystem.Application.Features.Certifications.ListCertif
                     CertificateNumber = c.CertificateNumber,
                     IssueDate = c.IssueDate,
                     ExpiryDate = c.ExpiryDate,
-                    // Computed dynamically rather than trusting a possibly-stale Status column
                     Status = c.ExpiryDate < now ? "Expired"
                              : c.ExpiryDate < now.AddDays(30) ? "ExpiringSoon"
                              : "Valid"

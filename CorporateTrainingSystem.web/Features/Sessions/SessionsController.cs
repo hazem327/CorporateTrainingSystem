@@ -6,6 +6,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using CorporateTrainingSystem.Application.Features.Sessions.CancelSession;
 
 namespace CorporateTrainingSystem.Web.Features.Sessions
 {
@@ -16,17 +17,20 @@ namespace CorporateTrainingSystem.Web.Features.Sessions
         private readonly ListSessionsHandler _listHandler;
         private readonly IValidator<CreateSessionCommand> _createValidator;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly CancelSessionHandler _cancelHandler;
 
         public SessionsController(
             CreateSessionHandler createHandler,
             ListSessionsHandler listHandler,
             IValidator<CreateSessionCommand> createValidator,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork, 
+            CancelSessionHandler cancelHandler)
         {
             _createHandler = createHandler;
             _listHandler = listHandler;
             _createValidator = createValidator;
             _unitOfWork = unitOfWork;
+            _cancelHandler = cancelHandler;
         }
 
         public async Task<IActionResult> Index()
@@ -76,5 +80,15 @@ namespace CorporateTrainingSystem.Web.Features.Sessions
                 .ToList();
             ViewBag.Instructors = new SelectList(employees, "Id", "FullName");
         }
+        [Authorize(Roles = "Administrator,TrainingManager")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Cancel(int id)
+        {
+            var result = await _cancelHandler.HandleAsync(id);
+            TempData[result.Success ? "Success" : "Error"] = result.Success ? "Session cancelled." : result.ErrorMessage;
+        return RedirectToAction(nameof(Index));
     }
+    }
+   
 }

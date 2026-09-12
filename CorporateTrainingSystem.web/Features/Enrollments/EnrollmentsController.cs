@@ -183,7 +183,12 @@ namespace CorporateTrainingSystem.Web.Features.Enrollments
                 }
             }
 
-            var result = await _cancelHandler.HandleAsync(new CancelEnrollmentCommand { EnrollmentId = id });
+            var result = await _cancelHandler.HandleAsync(new CancelEnrollmentCommand
+            {
+                EnrollmentId = id,
+                ActorUserId = _userManager.GetUserId(User),
+                ActorEmail = User.Identity?.Name
+            });
             if (result.Success)
             {
                 TempData["Success"] = "Enrollment cancelled successfully (BR-07).";

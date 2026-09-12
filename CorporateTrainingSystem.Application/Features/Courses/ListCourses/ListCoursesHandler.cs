@@ -24,6 +24,7 @@ namespace CorporateTrainingSystem.Application.Features.Courses.ListCourses
             }
 
             var courses = _unitOfWork.Repository<Course>().Query()
+                .Where(c => c.IsActive)
                 .Select(c => new CourseListItem
                 {
                     Id = c.Id,
